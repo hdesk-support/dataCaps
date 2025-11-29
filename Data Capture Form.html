@@ -1,0 +1,4108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-typography-scale="0">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="application-name" content="Data Capture Form" />
+        <meta name="author" content="John Joseph Roces" />
+        <meta name="description" content="Offline-first data capture form for customer care and product tracking." />
+        <meta name="copyright" content="© 2025 John Joseph Roces" />
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="pragma" content="no-cache" />
+        <meta name="theme-color" content="#2266ff" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="robots" content="noindex, nofollow" />
+
+        <title>Data Capture Form</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" />
+        <link rel="icon" type="image/png" href="https://fonts.gstatic.com/s/i/materialiconsoutlined/assignment/v6/24px.svg" />
+
+<style>
+    /* ---------------------------------------------------------------------- */
+    /* 1. DESIGN SYSTEM VARIABLES (Added missing variables) */
+    /* ---------------------------------------------------------------------- */
+    :root {
+        /* Colors - Base */
+        --color-bg: #ffffff; /* White background */
+        --color-surface: #f7f7f8; /* Very light gray surface */
+        --color-text: #121212; /* Near-black text */
+        --color-muted: #5c5f66; /* Muted gray for secondary text */
+        --color-border: #d9dadd; /* Light gray border */
+
+        /* Colors - Semantic */
+        --color-primary: #2266ff; /* Vivid blue */
+        --color-accent: #00b894; /* Teal green accent */
+        --color-danger: #e74c3c; /* Bright red for errors */
+        --color-warning: #ffc107; /* Amber/Yellow (Newly defined) */
+        --color-success: #4caf50; /* Green (Used in progress bar) */
+
+        /* Colors - Status/Quota */
+        --color-low: #4caf50; /* Green for low usage */
+        --color-medium: #ff9800; /* Orange for medium usage */
+        --color-high: #f44336; /* Red for high usage */
+
+        /* Colors - Utility (Newly defined) */
+        --color-highlight: #e6f0ff; /* Background for editable cell focus */
+        --color-muted-bg: #f0f0f0; /* Background for readonly cells/progress track */
+
+        /* Focus & Outlines */
+        --focus-ring: 2px solid var(--color-primary); /* Blue focus ring */
+        --outline-width: 2px;
+        --outline-color: var(--color-primary);
+
+        /* Typography */
+        --font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        --font-size-base: 16px;
+        --font-line-height: 1.5;
+
+        /* Spacing & Sizing */
+        --radius: 12px;
+        --radius-sm: 8px;
+
+        /* Shadows */
+        --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.08); /* Soft shadow */
+        --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.1); /* Deeper shadow */
+        --shadow-3: 0 16px 48px rgba(0, 0, 0, 0.15); /* For modals (Newly defined) */
+
+        /* Accessibility */
+        --typography-scale: 0;
+        --typography-step: 0.0625rem;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 1.1. THEME OVERRIDES (Dark & High-Contrast) */
+    /* ---------------------------------------------------------------------- */
+    [data-theme="dark"] {
+        --color-bg: #1a202c;
+        --color-surface: #2d3748;
+        --color-text: #e2e8f0;
+        --color-muted: #a1a5ad;
+        --color-primary: #63b3ed;
+        --color-accent: #4299e1;
+        --color-danger: #ff6b6b;
+        --color-warning: #f6ad55;
+        --color-highlight: #3b4e6d;
+        --color-muted-bg: #37465f;
+        --color-low: #68d391;
+        --color-medium: #f6ad55;
+        --color-high: #fc8181;
+        --color-border: #4a5568;
+        --focus-ring: 2px solid #63b3ed;
+        --outline-color: #63b3ed;
+    }
+    [data-theme="high-contrast"] {
+        --color-bg: #000000;
+        --color-surface: #000000;
+        --color-text: #ffffff;
+        --color-muted: #ffffff;
+        --color-primary: #00ff00;
+        --color-accent: #1e90ff;
+        --color-danger: #ff0000;
+        --color-warning: #ffff00;
+        --color-highlight: #004400;
+        --color-muted-bg: #111111;
+        --color-low: #00ff00;
+        --color-medium: #ffff00;
+        --color-high: #ff0000;
+        --color-border: #ffffff;
+        --focus-ring: 3px solid #ffff00;
+        --outline-width: 3px;
+        --outline-color: #ffff00;
+        --shadow-1: none;
+        --shadow-2: none;
+        --shadow-3: none;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 2. BASE AND TYPOGRAPHY */
+    /* ---------------------------------------------------------------------- */
+    html {
+        font-family: var(--font-family-base);
+        font-size: var(--font-size-base);
+        line-height: var(--font-line-height);
+        background: var(--color-bg);
+        color: var(--color-text);
+        scroll-behavior: smooth;
+    }
+    body {
+        margin: 0;
+        display: grid;
+        min-height: 100vh;
+        grid-template-rows: auto 1fr auto;
+        max-height: 100%;
+        max-width: 100%;
+        overflow: auto;
+    }
+
+    /* All text elements now consistently use the base font stack */
+    h1, h2, h3, h4, h5, h6, p, li, label, small, .helper-text,
+    .table-header-text, .btn-text, .footer-text, select  {
+        font-family: var(--font-family-base);
+        font-size: calc(0.85rem + (var(--typography-scale) * var(--typography-step)));
+    }
+    input::placeholder,
+    textarea::placeholder {
+        font-family: var(--font-family-base);
+        font-weight: 400;
+        font-size: calc(0.65rem + (var(--typography-scale) * var(--typography-step)));
+        color: var(--color-muted);
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 3. LAYOUT STRUCTURE (Header, Main, Footer) */
+    /* ---------------------------------------------------------------------- */
+    header.app-header {
+        position: sticky;
+        top: 0;
+        max-width: 100%;
+        max-height: auto;
+        z-index: 1000;
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: var(--shadow-1);
+        padding: 0.5rem 0.75rem;
+        user-select: none;
+    }
+    .header-inner {
+		display: grid;
+		grid-template-columns: auto 1fr auto; /* Left icon/buttons, center title, right controls */
+		align-items: center;
+		width: 100%;
+    }
+    main {
+        max-width: 100%;
+        padding: 1rem 0.75rem 4rem;
+        margin: 0 auto;
+        display: none;
+        flex-direction: column;
+        gap: 0.9rem;
+        flex-grow: 1;
+    }
+    footer.app-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        max-height: 30px;
+        background: var(--color-bg);
+        border-top: 1px solid var(--color-border);
+        box-shadow: var(--shadow-1);
+        padding: 0.5rem 0.5rem;
+        z-index: 999;
+    }
+    .footer-inner {
+        max-width: 100%;
+        width: 98%;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .footer-text {
+        font-size: 0.85rem;
+        color: var(--color-muted);
+        user-select: none;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 4. REUSABLE UTILITIES */
+    /* ---------------------------------------------------------------------- */
+    .visually-hidden {
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px);
+        white-space: nowrap;
+    }
+    .layout-cluster {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    .cluster {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .cluster.left { justify-content: flex-start; }
+    .cluster.center { justify-content: center; flex-grow: 1; }
+    .cluster.right { justify-content: flex-end; }
+    .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        padding: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .section-title {
+        margin: 0;
+        font-size: 1.9rem;
+        font-family: var(--font-family-base);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+    }
+    .helper-text {
+        color: var(--color-muted);
+        margin-bottom: 1rem;
+        user-select: none;
+    }
+    label i {
+        margin-left: 4px;
+        cursor: help;
+        color: var(--color-muted);
+        font-size: 0.9em;
+    }
+    .field-error {
+        border-color: var(--color-danger) !important;
+        outline: none;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 5. BUTTONS (Consolidated redundant properties) */
+    /* ---------------------------------------------------------------------- */
+    /* Shared button properties */
+	.btn, .icon-btn {
+		appearance: none;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-accent);
+		padding: 0.5rem 0.9rem;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		box-shadow: var(--shadow-1);
+		font-weight: 700;
+		place-items: center;
+		gap: 0.3rem;
+		transition: all 0.2s ease;
+		text-align: center;
+		user-select: none;
+		min-width: 44px;
+		min-height: 44px;
+	}
+    .btn:hover, .icon-btn:hover { filter: brightness(1.03); }
+    .btn:active, .icon-btn:active { transform: translateY(1px); }
+    .btn:focus-visible, .icon-btn:focus-visible { outline: var(--focus-ring); }
+    .btn i, .icon-btn i { font-size: 1.05rem; }
+
+    /* Button Modifiers/IDs */
+    .btn.danger, #btnClear, #btnDelete {
+        background: var(--color-danger);
+        color: #fff;
+        border-color: var(--color-danger);
+    }
+    .btn.primary {
+        background: var(--color-primary);
+        color: #fff;
+        border-color: var(--color-primary);
+    }
+    #btnSave, #btnSaveAsNew {
+        background: var(--color-accent);
+        color: #fff;
+        border-color: var(--color-accent);
+    }
+    /* #btnReset used hardcoded color, now uses defined variable */
+    #btnReset, #btnEdit {
+        background: var(--color-warning);
+        color: var(--color-text);
+        border-color: var(--color-warning);
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 6. FORM FIELDS (Unified Inputs) */
+    /* ---------------------------------------------------------------------- */
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+    .field.full {
+        grid-column: 1/-1;
+    }
+    .hidden-field { 
+		display: none; 
+	}
+    label {
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    input[type="text"], input[type="email"], input[type="tel"],
+    input[type="date"], input[type="datetime-local"], select {
+        appearance: none;
+        background: var(--color-bg);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.65rem 0.75rem;
+        width: 100%;
+        max-width: 280px;
+        box-sizing: border-box;
+        font-size: calc(0.65rem + (var(--typography-scale) * var(--typography-step)));
+        font-family: var(--font-family-base);
+        font-weight: 400;
+        transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--color-primary);
+        outline: none;
+    }
+    textarea {
+        resize: vertical;
+        appearance: none;
+        background: var(--color-bg);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.65rem 0.75rem;
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 80px;
+        max-height: 200px;
+        font-family: var(--font-family-base);
+        font-weight: 400;
+    }
+    .choices {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+    }
+    .choice {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    #searchInput {
+        flex-grow: 1;
+        min-width: 120px;
+        width: 180px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        align-items: center;
+        font-size: 1rem;
+        color: var(--color-text);
+    }
+    .actions-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        user-select: none;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 7. FORM/GUIDE CONTENT LAYOUT */
+    /* ---------------------------------------------------------------------- */
+    form.data-form {
+        display: none;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        align-items: start;
+        user-select: none;
+        padding: 1.5rem 0;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        zoom: 85%; /* Retained original, though generally discouraged */
+    }
+    @media (min-width: 720px) { form.data-form { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 960px) { form.data-form { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1280px) { form.data-form { grid-template-columns: repeat(4, 1fr 1fr); } }
+
+    #guideContent {
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-y: auto;
+        flex-grow: 1;
+        min-height: calc(100vh - 80px);
+        gap: 1.5rem;
+        user-select: none;
+    }
+    .card-Guide {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        padding: 2.5rem;
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 960px;
+        color: var(--color-text);
+        overflow-y: auto;
+        margin: 0 auto;
+    }
+    .card-Guide h2, .card-Guide h3, .card-Guide h4 {
+        font-family: var(--font-family-base);
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    .card-Guide p {
+        margin-bottom: 0.8rem;
+        line-height: 1.6;
+        font-weight: 400;
+        color: var(--color-text);
+    }
+    .card-Guide ul {
+        padding-left: 1.5rem;
+        margin-top: 1rem;
+    }
+    .card-Guide li {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        font-weight: 400;
+        color: var(--color-muted);
+    }
+    .guide-header { text-align: center; margin-bottom: 2rem; }
+    .guide-section { margin-bottom: 2rem; }
+    .reminder-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 0.75rem 1.25rem;
+        padding-left: 0;
+    }
+    .reminder-list li {
+        background: var(--color-surface);
+        border-left: 4px solid var(--color-accent);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-sm);
+        list-style: none;
+        box-shadow: var(--shadow-1);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--color-text);
+        font-weight: 500;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 8. MODAL STRUCTURE (Consolidated Duplication) */
+    /* ---------------------------------------------------------------------- */
+    /* Backdrop and initial positioning (Shared by all three modals) */
+    #recordsModal, #duplicatesModal, .modal.form {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        overflow-y: auto;
+    }
+    .modal.is-visible {
+        display: flex;
+    }
+
+    /* Content wrapper base style (Shared by all three content boxes) */
+    #recordsModal .modal-content, #duplicatesModal .modal-content, .modal.form .modal-content {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-3);
+        color: var(--color-text);
+        font-family: var(--font-family-base);
+        position: relative;
+        overflow-y: auto;
+        box-sizing: border-box;
+        margin: 20px; /* Added margin for better mobile spacing */
+    }
+
+    /* Specific modal width overrides for the table modals (wider) */
+    #recordsModal .modal-content, #duplicatesModal .modal-content {
+        width: 900px;
+        max-width: 95vw;
+    }
+
+    /* Specific modal width override for the form modal (narrower) */
+    .modal.form .modal-content {
+        width: 100%;
+        max-width: 720px;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        font-size: 1.75rem;
+        font-weight: 400;
+        color: var(--color-muted);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+        z-index: 1001;
+        transition: color 0.2s;
+    }
+    .close-button:hover, .close-button:focus {
+        color: var(--color-primary);
+        outline: none;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 9. TABLE STRUCTURE (Consolidated Duplication) */
+    /* ---------------------------------------------------------------------- */
+    /* Table Container (Shared by both main and duplicates table containers) */
+    #dataTableContainer, #duplicatesTableContainer {
+        grid-column: 1/-1;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Table Title (Shared by both main and duplicates table titles) */
+    #dataTableTitle, #duplicatesTableTitle {
+        top: 0;
+        user-select: none;
+        z-index: 10;
+        color: var(--color-text);
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
+    /* Table Inner Scroll Area (Shared by both inner containers) */
+    #dataTableInner, #duplicatesTableInner {
+        min-height: 30vh;
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: auto;
+        flex-grow: 1;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-2);
+        padding: 0;
+    }
+    /* Actual Table Element (Shared by both storedDataTable and duplicatesDataTable) */
+    #storedDataTable, #duplicatesDataTable {
+        width: 100%;
+        max-width: none;
+        border-collapse: collapse;
+        display: table;
+        font-size: 0.85rem;
+    }
+    /* Table Header and Cell Styles (Shared by both tables) */
+    #storedDataTable th, #storedDataTable td, #duplicatesDataTable th, #duplicatesDataTable td {
+        padding: 0.75rem 0.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+        white-space: nowrap;
+    }
+    #storedDataTable thead, #duplicatesDataTable thead {
+        background-color: var(--color-accent);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        color: #fff;
+        user-select: none;
+    }
+    #storedDataTable th, #duplicatesDataTable th {
+        font-weight: 500;
+        color: #fff;
+    }
+
+    /* Table Specific Styles */
+    td[contenteditable="true"] {
+        background-color: var(--color-surface);
+        outline: none;
+        cursor: text;
+        transition: background-color 0.2s;
+    }
+    td[contenteditable="true"]:focus {
+        background-color: var(--color-highlight);
+    }
+    .readonly-cell {
+        background-color: var(--color-muted-bg);
+        color: var(--color-muted);
+        cursor: not-allowed;
+    }
+    .highlight-row {
+        background-color: var(--color-warning);
+        animation: fadeHighlight 1.5s ease-in-out;
+    }
+    @keyframes fadeHighlight {
+        0% { background-color: var(--color-warning); }
+        100% { background-color: transparent; }
+    }
+    .id-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        font-size: 0.85em;
+        font-family: monospace;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 10. CONTROL GROUPS & DATETIME DISPLAY */
+    /* ---------------------------------------------------------------------- */
+    .control-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.25rem;
+        border-radius: var(--radius-sm);
+        flex-wrap: wrap;
+    }
+    .time-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--color-accent);
+        white-space: nowrap;
+    }
+    #dateTimeDisplay {
+        color: var(--color-accent);
+        padding: 0.5rem;
+        border-radius: var(--radius-sm);
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-family-base);
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* 11. STORAGE QUOTA BAR */
+    /* ---------------------------------------------------------------------- */
+    #storageQuotaContainer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5em 0;
+        user-select: none;
+        gap: 1em;
+    }
+    .progress-label {
+        font-size: 14px;
+        line-height: 24px;
+        color: var(--color-text);
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .progress-wrapper {
+        height: 24px;
+        background-color: var(--color-muted-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-grow: 1;
+        min-width: 100px;
+    }
+    .progress-bar {
+        height: 100%;
+        transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        text-align: right;
+        color: #ffffff;
+        padding-right: 5px;
+        font-size: 11px;
+        line-height: 24px;
+        white-space: nowrap;
+    }
+    .progress-count.view, .progress-count.storage, .progress-count.clear {
+        font-weight: bold;
+        margin: 0 2px;
+        color: #ffffff;
+    }
+    .progress-count.storage {
+        font-weight: bold;
+        margin: 0 2px;
+        color: var(--color-accent);
+    }
+    .progress-bar.low { background-color: var(--color-low); }
+    .progress-bar.medium { background-color: var(--color-medium); }
+    .progress-bar.high { background-color: var(--color-high); }
+
+    /* ---------------------------------------------------------------------- */
+    /* 12. MEDIA QUERIES */
+    /* ---------------------------------------------------------------------- */
+/* ─────────────────────────────────────────────── */
+/* 📱 Mobile: ≤768px — Stack layout, hide time     */
+/* ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  .control-bar,
+  .control-group.layout-cluster {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .cluster {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .cluster.left,
+  .cluster.center,
+  .cluster.right {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .time-wrapper {
+    display: none; /* Hide clock on mobile */
+  }
+
+  .control-group > button,
+  .control-group > .btn {
+    width: 100%;
+  }
+
+  .card-Guide {
+    padding: 1.5rem;
+  }
+
+  .reminder-list {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  #storageQuotaContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+  }
+
+  .progress-wrapper {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .modal.form .modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────── */
+/* 💻 Tablet: 769px–1024px — Moderate layout tweaks */
+/* ─────────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .progress-wrapper {
+    width: 40%;
+  }
+
+  .card-Guide {
+    padding: 2rem;
+  }
+
+  .reminder-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .time-wrapper {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+}
+
+/* ─────────────────────────────────────────────── */
+/* 🖥️ Desktop: ≥1025px — Full layout and spacing   */
+/* ─────────────────────────────────────────────── */
+@media (min-width: 1025px) {
+  .progress-wrapper {
+    width: 20%;
+  }
+
+  .card-Guide {
+    padding: 2.5rem;
+  }
+
+  .reminder-list {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem 1.25rem;
+  }
+
+  .time-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -60%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        }
+    }
+</style>
+
+    </head>
+    <body>
+        <header class="app-header" role="banner">
+			<nav class="control-bar" aria-label="Display and accessibility controls">
+				<div class="control-group layout-cluster">
+					<!-- Left Cluster: Theme & Font Controls -->
+					<div class="cluster left" role="group" aria-label="Font and theme controls">
+						<button class="icon-btn" id="btnTheme" type="button" aria-label="Cycle theme" title="Theme Toggle">
+							<i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+						</button>
+						<button class="icon-btn" id="btnFontDown" type="button" aria-label="Decrease font size" title="Decrease font size">
+							<i class="fas fa-minus"></i>
+						</button>
+						<button class="icon-btn" id="btnFontReset" type="button" aria-label="Default font size" title="Default font size">
+							<i class="fas fa-font"></i>
+						</button>
+						<button class="icon-btn" id="btnFontUp" type="button" aria-label="Increase font size" title="Increase font size">
+							<i class="fas fa-plus"></i>
+						</button>
+					</div>
+
+					<!-- Center Cluster: Record Controls -->
+					<div class="cluster center" role="group" aria-label="Record and timestamp controls">
+						<button type="button" class="btn primary" id="btnViewRecords" aria-controls="recordsModal" title="View Stored Records">
+							<i class="fas fa-database" title="View Stored Records"></i> View Records
+							<span id="recordCountDisplay" class="progress-count view">0</span>
+						</button>
+						<div class="time-wrapper">
+							<div id="dateTimeDisplay">Loading...</div>
+						</div>
+						<button type="button" class="btn" id="btnClear" title="Clear Stored Records">
+							<i class="fa-solid fa-trash-can" aria-hidden="true" title="Clear Stored Records"></i> Clear Records
+							<span id="recordCountForClearing" class="progress-count clear">0</span>
+						</button>
+					</div>
+
+					<!-- Right Cluster: Export, Import, Form, Break -->
+					<div class="cluster right" role="group" aria-label="Data and session controls">
+						<button type="button" class="btn" id="btnExport">
+							<i class="fa-solid fa-file-csv" aria-hidden="true" title="Download as CSV"></i>
+						</button>
+						<input type="file" id="fileInput" accept=".csv" style="display: none;" />
+						<button type="button" class="btn" id="btnImport" title="Upload Data from a CSV">
+							<i class="fa-solid fa-file-import" aria-hidden="true"></i>
+						</button>
+						<button type="button" class="btn" id="openModalFormBtn" aria-label="Show the Form">
+							<i class="fas fa-chalkboard-teacher" aria-hidden="true" title="Open Form"></i>
+						</button>
+						<button type="button" class="btn" id="btnBreakers">
+							<i class="fas fa-clock" aria-hidden="true" title="Going on a break?"></i>
+						</button>
+					</div>
+				</div>
+			</nav>
+        </header>
+		<section id="guideContent" role="region" aria-label="User Guide">
+		  <section class="card card-Guide" aria-labelledby="guideTitle">
+			<header class="guide-header">
+			  <h1 id="guideTitle" class="section-title">Getting Started with the Data Capture Form Tool — 👁👁 Read Me 👁👁</h1>
+			  <p style="font-size: 16px;"><strong>Capture and manage structured data directly in your browser. Works offline and stores entries securely in Local Storage.</strong></p>
+			</header>
+			
+			<section class="guide-section">
+			  <h1>📋 Data Capture Form — Functional Guide</h1>
+			  <p>This guide outlines how the Data Capture Form works across all aspects — from dropdown dependencies and dynamic logic to data storage, accessibility, and UI behavior. Expand each item to understand how your selections and actions influence the form.</p>
+
+			  <p><strong>Reminder:</strong> If anything feels unclear, use the <strong>MODIFY</strong> or <strong>CLONE</strong> feature to adjust your tagging before saving OR check with your L2/TL. Unedited entries may be treated as internal feedback once audited.</p>
+
+
+				<summary><h2>🎯 Direction + Contact Direction → Contact Reason Main + Closing Disposition</h2></summary>
+				<p>These fields work together to determine which contact reasons and closing dispositions are valid. The logic is reactive to both voice and non-voice channels.</p>
+
+				<h3>Trigger Fields:</h3>
+				<ul>
+				  <li><strong>Direction</strong>: Voice, Non-Voice, EasyCare</li>
+				  <li><strong>Contact Direction</strong>: Inbound, Outbound, Email, WebChat, etc.</li>
+				  <li><strong>Contact Reason Main</strong>: Complaint, Compliment, General, etc.</li>
+				</ul>
+
+				<h3>Behavior Summary:</h3>
+				<ul>
+				  <li>If <strong>Direction = Voice</strong> and <strong>Contact Direction = Inbound/Outbound</strong>:
+					<ul>
+					  <li><strong>Complaint or Compliment</strong> → Escalation and unresolved options</li>
+					  <li><strong>General, Sales, Technical, Service, Warranty</strong> → Includes “Resolved by L1”</li>
+					  <li><strong>Line Issue</strong> → Only “Line Disconnected” and unresolved options</li>
+					  <li><strong>Language Support</strong> → Prioritize “Escalated to Client” but other options are available</li>
+					</ul>
+				  </li>
+				  <li>If <strong>Direction = Non-Voice</strong> and <strong>Contact Direction = Email, FB, WebChat, etc.</strong>:
+					<ul>
+					  <li>Same reason logic applies, but with “Repeat Email/Chat” instead of “Repeat Call”</li>
+					</ul>
+				  </li>
+				  <li>If <strong>Direction = EasyCare</strong>:
+					<ul>
+					  <li>“Service” includes “For Dispatch-Cons” and “For Dispatch-Parts”</li>
+					</ul>
+				  </li>
+				  <li>If <strong>Contact Direction = Service Call</strong>:
+					<ul>
+					  <li><strong>Contact Reason Main</strong> is auto-assigned to “Technical”</li>
+					  <li><strong>Closing Disposition</strong> → “For Dispatch” and “For Carry-In” only</li>
+					</ul>
+				  </li>
+				  <li>If <strong>Contact Direction = Transfer Call</strong>:
+					<ul>
+					  <li><strong>Closing Disposition</strong> → “Escalated to L2/TL”, “Line Disconnected”, and unresolved options</li>
+					</ul>
+				  </li>
+				</ul>
+				
+				<summary><h2>🧩 Product Category → Product Subcategory → Customer Type</h2></summary>
+				<p>This chain ensures that customer type is correctly inferred from the selected product subcategory.</p>
+
+				<h3>Trigger Fields:</h3>
+				<ul>
+				  <li><strong>Product Category</strong></li>
+				  <li><strong>Product Subcategory</strong></li>
+				</ul>
+
+				<h3>Behavior Summary:</h3>
+				<ul>
+				  <li>When <strong>Product Category</strong> changes:
+					<ul>
+					  <li><strong>Product Subcategory</strong> is reset and repopulated</li>
+					  <li><strong>Customer Type</strong> is reset using <code>resetSelect()</code></li>
+					</ul>
+				  </li>
+				  <li>When <strong>Product Subcategory</strong> changes:
+					<ul>
+					  <li><strong>Customer Type</strong> is dynamically assigned using a mapping dictionary</li>
+					</ul>
+				  </li>
+				</ul>
+				
+				<summary><h2>🧾 Creating a New Record</h2></summary>
+				<ul>
+				  <li>Click the chalkboard icon to open the modal form</li>
+				  <li>Fill in all required fields marked with an asterisk (*)</li>
+				  <li>Fields like <code>Email</code>, <code>Within HOOP</code>, and <code>Date-Time Local</code> appear based on selected contact direction</li>
+				</ul>
+				
+				<summary><h2>📂 Viewing and Managing Records</h2></summary>
+				<ul>
+				  <li>Use the database icon to open the records modal</li>
+				  <li>Stored entries are saved in browser local storage</li>
+				  <li>Use <strong>Search</strong> to locate records by ID and auto-populate the form</li>
+				  <li>Use <strong>Modify</strong> to update a record or <strong>Clone</strong> to duplicate it</li>
+				</ul>
+				
+				<summary><h2>📤 Exporting and Importing Data</h2></summary>
+				<ul>
+				  <li>Export data as CSV for backup</li>
+				  <li>Import previously saved CSVs to restore or merge records</li>
+				  <li>Import auto-triggers file selector and allows duplicate handling</li>
+				</ul>
+				
+				<summary><h2>🔐 Data Security and Persistence</h2></summary>
+				<ul>
+				  <li>Data is stored locally in your browser</li>
+				  <li>Persists across refreshes and tab closures</li>
+				  <li>May be lost on shutdown, restart, or browser sign-out</li>
+				  <li><strong>Always export before leaving your workstation</strong></li>
+				</ul>
+				
+				<summary><h2>⚙️ Form Behavior and Controls</h2></summary>
+				<ul>
+				  <li>Form resets on page refresh or when the refresh button is clicked</li>
+				  <li>Required fields must be completed before saving</li>
+				  <li>Duplicate detection prevents overwriting — modify at least one field to save as new</li>
+				  <li>Dropdowns dynamically populate based on prior selections</li>
+				</ul>
+				
+				<summary><h2>⏰ Live Date and Time</h2></summary>
+				<ul>
+				  <li>Displays live date and time with seconds for timestamping</li>
+				</ul>
+
+
+				<summary><h2>🚫 Disabled Buttons/Controls</h2></summary>
+				<ul>
+				  <li>View Records, Clear Records, Export, and Import buttons are disabled while the Getting Started content is shown</li>
+				  <li>Click <strong>Open Form</strong> first to unlock full functionality</li>
+				</ul>
+
+
+			  <p><strong>Still unsure?</strong> Ask questions, use the <strong>MODIFY</strong> or <strong>CLONE</strong> tools, and make sure your tagging aligns with the logic before saving.</p>
+			</section>
+
+			
+			<section class="guide-section">
+			  <h3>📝 EasyCare Contacts:</h3>
+			  <p>If you receive an <strong>EasyCare</strong> call but you're not part of the <strong>EasyCare team</strong>—or if you get a call from <strong>SG/PH involving RIPS or LIJ models</strong>—please coordinate the call details with the EasyCare team. They will handle the processing (if it is indeed an easycare call). Make sure to still document the call in the system and Datacaps, and tag it as a regular call. EasyCare team will have it documented as EasyCare contact in their separate tracker.</p>
+			</section>
+			
+			<section class="guide-section">
+			  <h4>🧠 Top Controls</h4>
+			  <ul class="reminder-list">
+				<li><strong>🟢 Theme toggle:</strong> Switch between dark, light, and high contrast modes.</li>
+				<li><strong>➖ Decrease Font Size:</strong> Shrinks text elements.</li>
+				<li><strong>🔼 Reset Font Size:</strong> Resets text to default size.</li>
+				<li><strong>➕ Increase Font Size:</strong> Enlarges text elements.</li>
+				<li><strong>📄 View Records:</strong> Access locally stored data.</li>
+				<li><strong>🗑 Clear:</strong> Deletes all stored records.</li>
+				<li><strong>📤 Export:</strong> Backs up your data to CSV.</li>
+				<li><strong>📥 Import:</strong> Restores or merges saved data.</li>
+				<li><strong>🧑‍🏫 Show Form:</strong> Opens the form in a modal view.</li>
+				<li><strong>⏰ Break Timer:</strong> Lets you take breaks in 15, 30, or 60-minute intervals.</li>
+			  </ul>
+			</section>
+			<section class="guide-section">
+			  <h4>🛠️ Form Controls</h4>
+			  <ul class="reminder-list">
+				<li><strong>💾 Save:</strong> Save new record and store it locally in the browser storage.</li>
+				<li><strong>🔄 Refresh:</strong> Resets the form controls to its default text/values.</li>
+				<li><strong>✏️ Modify:</strong> Edit/Update/Modify selected records after search attempt.</li>
+				<li><strong>🔍 Search:</strong> Search for a unique record in the stored data (preferrably by ID) and auto-populate form controls.</li>
+				<li><strong>🧬 Clone:</strong> Clone or Save as a new record after search attempt.</li>
+				<li><strong>❌ Remove:</strong> Remove or delete individual record after search attempt.</li>
+			  </ul>
+			</section>
+		  </section>
+		</section>
+        <main id="main" role="main">
+		<!-- Modal Wrapper -->
+		<div id="modalFormWrapper" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+		  <div class="modal-form">
+            <section class="card" aria-labelledby="formTitle">
+                <h1 id="formTitle" class="section-title">DATA CAPTURE - OFFLINE</h1>
+                <div id="live" role="status" aria-live="polite" class="visually-hidden"></div>
+                <div class="actions-wrapper">
+                    <div class="actions">
+                        <button type="button" class="btn" id="btnSave">Save <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i></button>
+                        <button type="button" class="btn" id="btnReset">Refresh <i class="fa-solid fa-recycle" aria-hidden="true"></i></button>
+                        <button type="button" class="btn" id="btnEdit">Modify <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="actions">
+                        <input type="text" id="searchInput" placeholder="Search..." title="Enter search term" />
+                        <button type="button" class="btn secondary" id="btnSearch" title="Search/Populate Form">Search <i class="fa-solid fa-magnifying-glass" style="color: var(--color-text);" aria-hidden="true"></i></button>
+                        <button type="button" class="btn" id="btnSaveAsNew">Clone <i class="fa-solid fa-plus-circle" aria-hidden="true"></i></button>
+                        <button type="button" class="btn" id="btnDelete">Remove <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div id="storageQuotaContainer">
+                    <label for="progressBar" class="progress-label">Storage Usage: <span id="recordCountLabel" class="progress-count storage">0</span> of 1000 record(s) </label>
+                    <div class="progress-wrapper">
+                        <div id="progressBar" class="progress-bar low" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="500">
+                            0%
+                        </div>
+                    </div>
+                </div>
+                <form class="data-form cards" id="dataForm" novalidate>
+                    <div class="field">
+                        <label for="fldDirection">Direction:*
+						<i class="fas fa-info-circle" title="Select a Direction first to enable other fields"></i>
+						</label>
+                        <select id="fldDirection" name="direction" required>
+                            <option value="">Select a Direction</option>
+                            <option value="Voice">Voice</option>
+                            <option value="Non-Voice">Non-Voice</option>
+                            <option value="EasyCare">EasyCare</option>
+                        </select>
+                    </div>
+                    <div class="field"><label for="fldDate">Date:*
+					</label>
+					<input type="date" id="fldDate" name="date" required /></div>
+                    <div class="field">
+                        <label for="fldAgentName">Agent Name:*</label>
+                        <select id="fldAgentName" name="agentName" required>
+                            <option value="">Select Agent</option>
+                            <option value="Ains">Ains</option>
+                            <option value="Batch">Batch</option>
+                            <option value="Ben">Ben</option>
+                            <option value="Chery">Chery</option>
+                            <option value="Dennis">Dennis</option>
+                            <option value="Gail">Gail</option>
+                            <option value="James">James</option>
+                            <option value="John">John</option>
+                            <option value="Kath">Kath</option>
+                            <option value="Nico">Nico</option>
+                            <option value="Philip">Philip</option>
+                            <option value="Precy">Precy</option>
+                            <option value="Princess">Princess</option>
+                            <option value="Raine">Raine</option>
+                            <option value="Rio">Rio</option>
+                            <option value="Tristan">Tristan</option>
+                            <option value="Vina">Vina</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldContactDirection">Contact Direction:*</label>
+                        <select id="fldContactDirection" name="contactDirection" required>
+                            <option value="">Select Contact Direction</option>
+                            <option value="Inbound">Inbound</option>
+                            <option value="Outbound">Outbound</option>
+                            <option value="Service Call">Service Call</option>
+                            <option value="Transfer Call">Transfer Call</option>
+                            <option value="Email">Email</option>
+                            <option value="FB: Post">FB:Post</option>
+                            <option value="FB: Messenger">FB:Messenger</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="X (Twitter)">X(Twitter)</option>
+                            <option value="Linked In">Linked In</option>
+							<option value="Viber Demo">Viber Demo</option>
+                            <option value="Webchat">Webchat</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldChannel">Channel:*</label>
+                        <select id="fldChannel" name="channel" required>
+                            <option value="">Select Channel</option>
+                            <option value="Philippines">Philippines</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="Malaysia">Malaysia</option>
+                        </select>
+                    </div>
+                    <div class="field"><label for="fldCustomerName">Customer Name:*</label><input type="text" id="fldCustomerName" name="customerName" placeholder="e.g., Mr/Ms. Customer" required /></div>
+                    <div class="field"><label for="fldCustomerNumber">Customer Number:*</label><input type="tel" id="fldCustomerNumber" name="customerNumber" placeholder="e.g., 09171234567" required /></div>
+                    <div class="field">
+                        <label for="fldContactReasonMain">Contact Reason (Main):*</label>
+                        <select id="fldContactReasonMain" name="contactReasonMain" required>
+                            <option value="">Select Contact Reason</option>
+                            <option value="Complaint">Complaint</option>
+                            <option value="Compliment">Compliment</option>
+                            <option value="EasyCare">EasyCare</option>
+                            <option value="General">General</option>
+                            <option value="Language Support">Language Support</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Service">Service</option>
+                            <option value="Warranty">Warranty</option>
+                        </select>
+                    </div>
+                    <div class="field" style="position: relative;">
+                        <label for="fldContactReasonSub">Contact Reason (Sub):*</label>
+                        <select id="fldContactReasonSub" name="contactReasonSub" required>
+                            <option value="">Select Main Reason first</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldProductCategory">Product Category:*</label>
+                        <select id="fldProductCategory" name="productCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="Printers">Printers</option>
+                            <option value="Printing Solutions">Printing Solutions</option>
+                            <option value="Visual Products">Visual Products</option>
+                            <option value="Scanners">Scanners</option>
+                            <option value="Others">Others</option>
+                            <option value="Unable to get the model">Unable to get the model</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldProductSubcategory">Product Sub-category:*</label>
+                        <select id="fldProductSubcategory" name="productSubcategory" required>
+                            <option value="">Select a Category first</option>
+                        </select>
+                    </div>
+                    <div class="field"><label for="fldProductModel">Product Model:*</label><input type="text" id="fldProductModel" name="productModel" placeholder="e.g., L120 or N/A" required /></div>
+                    <div class="field"><label for="fldTransactionNumber">Transaction Number:*</label><input type="text" id="fldTransactionNumber" name="transactionNumber" placeholder="e.g., E1234567" required /></div>
+                    <div class="field">
+                        <label for="fldCaptureSource">Capture Source:*</label>
+                        <select id="fldCaptureSource" name="captureSource" required>
+                            <option value="">Select Source</option>
+                            <option value="Client">Client</option>
+                            <option value="Customer">Customer</option>
+                            <option value="Dealer">Dealer</option>
+                            <option value="Service Partner">Service Partner</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldClosingDisposition">Closing Disposition:*</label>
+                        <select id="fldClosingDisposition" name="closingDisposition" required>
+                            <option value="">Select Disposition</option>
+                            <option value="Resolved by L1">Resolved by L1</option>
+                            <option value="Resolved by ChatBot">Resolved by ChatBot</option>
+                            <option value="Line Disconnected">Line Disconnected</option>
+                            <option value="Repeat Call">Repeat Call</option>
+                            <option value="Escalated to Client">Escalated to Client</option>
+                            <option value="Escalated to L2/TL">Escalated to L2/TL</option>
+                            <option value="For Carry-In">For Carry-In</option>
+                            <option value="For Dispatch">For Dispatch</option>
+                            <option value="Unresolved: EU Will Call/Email Back">Unresolved:EU Will Call/Email Back</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldIsVRAUtilized">Is VRA Utilized?:*</label>
+                        <select id="fldIsVRAUtilized" name="isVRAUtilized" required>
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Repeat Call">Repeat Call</option>
+                        </select>
+                    </div>
+                    <div class="field hidden-field" id="non-voice-hoop-field">
+                        <label for="fldHoop">Within HOOP?:*</label>
+                        <select id="fldHoop" name="isHoop" required>
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Sunday">Sunday</option>
+                            <option value="Repeat Call">Repeat Call</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fldIsSurveySent">Is Survey Sent?:*</label>
+                        <select id="fldIsSurveySent" name="isSurveySent" required>
+                            <option value="">Select Option</option>
+                            <option value="Yes via Email">Yes via Email</option>
+                            <option value="Yes via SMS">Yes via SMS</option>
+                            <option value="Yes via Email and SMS">Yes via Email and SMS</option>
+                            <option value="No">No</option>
+                            <option value="Repeat Call">Repeat Call</option>
+                        </select>
+                    </div>
+                    <div class="field hidden-field" id="survey-email-field">
+                        <label for="fldCustomerEmail">Customer Email:*</label><input type="email" id="fldCustomerEmail" name="customerEmail" placeholder="none@noemail.com" required />
+                    </div>
+                    <div class="field">
+                        <label for="fldCustomerType">Customer Type:*</label>
+                        <select id="fldCustomerType" name="customerType" required>
+                            <option value="">Select Type</option>
+                            <option value="HARI-B2B">HARI-B2B</option>
+                            <option value="HARI-B2C">HARI-B2C</option>
+							<option value="MERI-B2B">MERI-B2B</option>
+							<option value="MERI-B2C">MERI-B2C</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                    <div class="field hidden-field" id="non-voice-received-field">
+                        <label for="fldDateTimeReceived">Date and Time Received:*</label><input type="datetime-local" id="fldDateTimeReceived" name="dateTimeReceived" required />
+                    </div>
+                    <div class="field hidden-field" id="non-voice-started-field"><label for="fldDateTimeStarted">Date and Time Started:*</label><input type="datetime-local" id="fldDateTimeStarted" name="dateTimeStarted" required /></div>
+                    <div class="field hidden-field" id="non-voice-responded-field">
+                        <label for="fldDateTimeResponded">Date and Time Responded:*</label><input type="datetime-local" id="fldDateTimeResponded" name="dateTimeResponded" required />
+                    </div>
+                    <div class="field full">
+                        <label for="fldNotes">Case Notes:</label><textarea id="fldNotes" name="notes" placeholder="Any additional case notes, important details, or justification for being unable to get the model..."></textarea>
+                    </div>
+                </form>
+            </section>
+            <div id="recordsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dataTableTitle">
+                <div class="modal-content">
+                    <button class="close-button" aria-label="Close modal">&times;</button>
+                    <section id="dataTableContainer" aria-labelledby="dataTableTitle">
+                        <h2 id="dataTableTitle" class="table-header-text">Saved Records</h2>
+                        <div id="dataTableInner" class="cards">
+                            <table id="storedDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Direction</th>
+                                        <th>Date</th>
+                                        <th>Agent Name</th>
+                                        <th>Contact Direction</th>
+                                        <th>Channel</th>
+                                        <th>Customer Name</th>
+                                        <th>Customer Number</th>
+                                        <th>Contact Reason(Main)</th>
+                                        <th>Contact Reason(Sub)</th>
+                                        <th>Product Category</th>
+                                        <th>Product Subcategory</th>
+                                        <th>Product Model</th>
+                                        <th>Transaction Number</th>
+                                        <th>Capture Source</th>
+                                        <th>Closing Disposition</th>
+                                        <th>VRA Utilization</th>
+                                        <th>Is Within HOOP?</th>
+                                        <th>Is Survey Sent?</th>
+                                        <th>Customer Email</th>
+                                        <th>Customer Type</th>
+                                        <th>Date Time Received</th>
+                                        <th>Date Time Started</th>
+                                        <th>Date Time Responded</th>
+                                        <th>Case Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <div id="duplicatesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="duplicatesTableTitle">
+                <div class="modal-content">
+                    <button class="close-button" aria-label="Close modal">&times;</button>
+                    <section id="duplicatesTableContainer" aria-labelledby="duplicatesTableTitle">
+                        <h2 id="duplicatesTableTitle" class="table-header-text">Skipped Duplicate Entries</h2>
+                        <div style="margin-bottom: 1rem;">
+                            <label>
+                                <input type="checkbox" id="importDuplicatesToggle" />
+                                Import all duplicate entries anyway
+                            </label>
+                        </div>
+                        <p id="duplicatesSummary" class="table-header-text" style="margin-bottom: 1rem;"></p>
+                        <div id="duplicatesTableInner" class="cards">
+                            <table id="duplicatesDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Direction</th>
+                                        <th>Date</th>
+                                        <th>Agent Name</th>
+                                        <th>Contact Direction</th>
+                                        <th>Channel</th>
+                                        <th>Customer Name</th>
+                                        <th>Customer Number</th>
+                                        <th>Contact Reason(Main)</th>
+                                        <th>Contact Reason(Sub)</th>
+                                        <th>Product Category</th>
+                                        <th>Product Subcategory</th>
+                                        <th>Product Model</th>
+                                        <th>Transaction Number</th>
+                                        <th>Capture Source</th>
+                                        <th>Closing Disposition</th>
+                                        <th>VRA Utilization</th>
+                                        <th>Is Within HOOP?</th>
+                                        <th>Is Survey Sent?</th>
+                                        <th>Customer Email</th>
+                                        <th>Customer Type</th>
+                                        <th>Date Time Received</th>
+                                        <th>Date Time Started</th>
+                                        <th>Date Time Responded</th>
+                                        <th>Case Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <button id="confirmImportDuplicatesBtn">Import Duplicates</button>
+                            <button id="cancelImportDuplicatesBtn">Cancel</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+        <footer class="app-footer" role="contentinfo">
+            <div class="footer-inner">
+                <div class="footer-text" aria-label="Left footer phrase">Important: Always export your data and save it to your individual shared folder as back-up.</div>
+                <div class="footer-text" aria-label="Right footer credits">© Data Capture 2025 | EPSON x HGS | M128705  CoPilot AI x Gemini AI</div>
+            </div>
+        </footer>
+        <script>
+            const CONFIG = {
+                storageKey: "rawForm.entries.v1",
+                themeKey: "rawForm.theme.v1",
+                typoKey: "rawForm.typography.v1",
+                csvHeaders: [
+                    "id",
+                    "direction",
+                    "date",
+                    "agentName",
+                    "contactDirection",
+                    "channel",
+                    "customerName",
+                    "customerNumber",
+                    "contactReasonMain",
+                    "contactReasonSub",
+                    "productCategory",
+                    "productSubcategory",
+                    "productModel",
+                    "transactionNumber",
+                    "captureSource",
+                    "closingDisposition",
+                    "isVRAUtilized",
+                    "isHoop",
+                    "isSurveySent",
+                    "customerEmail",
+                    "customerType",
+                    "dateTimeReceived",
+                    "dateTimeStarted",
+                    "dateTimeResponded",
+                    "notes",
+                ],
+                themes: ["dark", "light", "high-contrast"],
+                typography: { min: -3, max: 6, stepPx: 1 },
+            };
+            const Utils = {
+                uuid() {
+                    return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+                },
+
+                toLocal(date = new Date()) {
+                    return date.toLocaleString(); // Fixed typo
+                },
+
+                announce(msg) {
+                    const live = document.getElementById("live");
+                    if (live) live.textContent = msg;
+                },
+
+                softEmailValid(value) {
+                    if (!value) return true;
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                },
+
+                escapeCSV(value) {
+                    if (value == null) return "";
+                    const str = String(value).replace(/\r?\n/g, " ");
+                    const needsQuotes = /[",\n]/.test(str);
+                    const escaped = str.replace(/"/g, '""');
+                    return needsQuotes ? `"${escaped}"` : escaped;
+                },
+
+                downloadCSV(filename, rows) {
+                    const header = CONFIG.csvHeaders.join(",");
+                    const content = [header, ...rows].join("\n");
+                    const BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
+                    const blob = new Blob([BOM, content], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                },
+                alert(message, duration = 2000) {
+                    // Remove any existing alert
+                    const existing = document.getElementById("utils-alert");
+                    if (existing) existing.remove();
+
+                    const modal = document.createElement("div");
+                    modal.id = "utils-alert";
+                    modal.style.cssText = `
+			  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+			  padding: 20px; background: var(--color-surface); border-radius: 12px;
+			  box-shadow: 0 4px 15px var(--shadow-2); z-index: 2000;
+			  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+			  border: 1px solid var(--color-border); color: var(--color-text);
+			  animation: fadeIn 0.3s ease-out; user-select: none;
+			  `;
+
+                    const text = document.createElement("p");
+                    text.textContent = message;
+
+                    modal.appendChild(text);
+                    document.body.appendChild(modal);
+
+                    // Auto-dismiss after timeout
+                    setTimeout(() => {
+                        modal.remove();
+                    }, duration);
+                },
+                async confirm(message) {
+                    return new Promise((resolve) => {
+                        // Remove any existing confirm
+                        const existing = document.getElementById("utils-confirm");
+                        if (existing) existing.remove();
+
+                        const modal = document.createElement("div");
+                        modal.id = "utils-confirm";
+                        modal.style.cssText = `
+					position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+					padding: 20px; background: var(--color-surface); border-radius: 12px;
+					box-shadow: 0 4px 15px var(--shadow-2); z-index: 2000;
+					display: flex; flex-direction: column; align-items: center; gap: 1rem;
+					border: 1px solid var(--color-border); color: var(--color-text); user-select: none;
+				  `;
+
+                        const text = document.createElement("p");
+                        text.textContent = message;
+
+                        const btnContainer = document.createElement("div");
+                        btnContainer.style.display = "flex";
+                        btnContainer.style.gap = "1rem";
+
+                        const okButton = document.createElement("button");
+                        okButton.textContent = "OK";
+                        okButton.className = "btn danger";
+                        okButton.onclick = () => {
+                            modal.remove();
+                            resolve(true);
+                        };
+
+                        const cancelButton = document.createElement("button");
+                        cancelButton.textContent = "Cancel";
+                        cancelButton.className = "btn";
+                        cancelButton.onclick = () => {
+                            modal.remove();
+                            resolve(false);
+                        };
+
+                        btnContainer.append(okButton, cancelButton);
+                        modal.append(text, btnContainer);
+                        document.body.appendChild(modal);
+                    });
+                },
+            };
+
+            const Storage = (() => {
+                let backend = null;
+                function resolveBackend() {
+                    if (backend) return backend;
+                    try {
+                        const tkey = "__test_local__";
+                        localStorage.setItem(tkey, "1");
+                        localStorage.removeItem(tkey);
+                        backend = localStorage;
+                        return backend;
+                    } catch (_) {
+                        try {
+                            const tkey2 = "__test_session__";
+                            sessionStorage.setItem(tkey2, "1");
+                            sessionStorage.removeItem(tkey2);
+                            backend = sessionStorage;
+                            Utils.announce("Storage fallback to sessionStorage.");
+                            return backend;
+                        } catch (err) {
+                            backend = null;
+                            return null;
+                        }
+                    }
+                }
+                function getAll() {
+                    const store = resolveBackend();
+                    if (!store) return [];
+                    try {
+                        const raw = store.getItem(CONFIG.storageKey);
+                        if (!raw) return [];
+                        const parsed = JSON.parse(raw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (_) {
+                        return [];
+                    }
+                }
+                function setAll(entries) {
+                    const store = resolveBackend();
+                    if (!store) return !1;
+                    try {
+                        store.setItem(CONFIG.storageKey, JSON.stringify(entries));
+                        return !0;
+                    } catch (err) {
+                        if (store === localStorage) {
+                            backend = sessionStorage;
+                            try {
+                                sessionStorage.setItem(CONFIG.storageKey, JSON.stringify(entries));
+                                Utils.announce("Saved via sessionStorage (localStorage unavailable).");
+                                return !0;
+                            } catch (_) {
+                                return !1;
+                            }
+                        }
+                        return !1;
+                    }
+                }
+                function appendAll(newEntries) {
+                    const existingData = getAll();
+                    const combinedData = existingData.concat(newEntries);
+                    return setAll(combinedData);
+                }
+                function append(entry) {
+                    const current = getAll();
+                    entry.id = "ID-" + crypto.randomUUID();
+                    current.push(entry);
+                    return setAll(current);
+                }
+                function getById(id) {
+                    const data = getAll();
+                    return data.find((entry) => entry.id === id);
+                }
+                function update(updatedEntry) {
+                    const data = getAll();
+                    const index = data.findIndex((entry) => entry.id === updatedEntry.id);
+                    if (index !== -1) {
+                        data[index] = { ...data[index], ...updatedEntry };
+                        return setAll(data);
+                    }
+                    return !1;
+                }
+                function remove(id) {
+                    let data = getAll();
+                    const initialLength = data.length;
+                    data = data.filter((entry) => entry.id !== id);
+                    if (data.length < initialLength) {
+                        return setAll(data);
+                    }
+                    return !1;
+                }
+                function clearAll() {
+                    const store = resolveBackend();
+                    if (!store) return !1;
+                    try {
+                        store.removeItem(CONFIG.storageKey);
+                        return !0;
+                    } catch (_) {
+                        return !1;
+                    }
+                }
+                function setPref(key, value) {
+                    const store = resolveBackend();
+                    if (!store) return !1;
+                    try {
+                        store.setItem(key, JSON.stringify(value));
+                        return !0;
+                    } catch (_) {
+                        return !1;
+                    }
+                }
+                function getPref(key, fallback = null) {
+                    const store = resolveBackend();
+                    if (!store) return fallback;
+                    try {
+                        const raw = store.getItem(key);
+                        return raw ? JSON.parse(raw) : fallback;
+                    } catch (_) {
+                        return fallback;
+                    }
+                }
+                return { getAll, setAll, appendAll, append, getById, update, remove, clearAll, setPref, getPref };
+            })();
+        </script>
+        <script>
+            function showInlineError(el, message) {
+                let errorEl = el.parentElement.querySelector(".error-message");
+                if (!errorEl) {
+                    errorEl = document.createElement("small");
+                    errorEl.className = "error-message";
+                    errorEl.style.color = "var(--color-danger)";
+                    errorEl.style.fontSize = "0.8rem";
+                    errorEl.style.display = "block";
+                    el.parentElement.appendChild(errorEl);
+                }
+                el.classList.add("field-error");
+            }
+
+            function clearInlineError(el) {
+                const errorEl = el.parentElement.querySelector(".error-message");
+                if (errorEl) errorEl.remove();
+                el.classList.remove("field-error");
+            }
+
+            const Form = (() => {
+                const formEl = document.getElementById("dataForm");
+                const nonVoiceFields = [
+                    document.getElementById("non-voice-hoop-field"),
+                    document.getElementById("non-voice-received-field"),
+                    document.getElementById("non-voice-started-field"),
+                    document.getElementById("non-voice-responded-field"),
+                ];
+                const dataForm = formEl;
+                function validateVisibleFields() {
+                    const formElements = formEl.querySelectorAll("input, select, textarea");
+                    let isValid = true;
+                    let firstInvalidField = null;
+
+                    for (const el of formElements) {
+                        const parentField = el.closest(".field");
+                        const isHidden = parentField && parentField.classList.contains("hidden-field");
+                        if (isHidden) continue;
+
+                        const isRequired = el.hasAttribute("required");
+                        const isEmpty = el.value.trim() === "";
+
+                        clearInlineError(el);
+
+                        if (isRequired && isEmpty) {
+                            isValid = false;
+                            showInlineError(el, "This field is required.");
+                            if (!firstInvalidField) firstInvalidField = el;
+                        }
+                    }
+
+                    if (!isValid) {
+                        Utils.alert("Please fill out all required(*) fields.");
+                        if (firstInvalidField) firstInvalidField.focus();
+                    }
+
+                    return isValid;
+                }
+                function validateUniqueEntry() {
+                    const formElements = formEl.querySelectorAll("input, select, textarea");
+                    const currentEntry = {};
+
+                    for (const el of formElements) {
+                        const parentField = el.closest(".field");
+                        const isHidden = parentField && parentField.classList.contains("hidden-field");
+                        if (isHidden) continue;
+
+                        const key = el.name || el.id;
+                        const value = el.value.trim();
+                        currentEntry[key] = value;
+                        clearInlineError(el);
+                    }
+
+                    const allRecords = Storage.getAll();
+                    const isDuplicate = allRecords.some((record) => {
+                        for (const key in currentEntry) {
+                            if ((record[key] || "").trim() !== currentEntry[key]) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+
+                    if (isDuplicate) {
+                        let firstHighlighted = null;
+
+                        for (const el of formElements) {
+                            const parentField = el.closest(".field");
+                            const isHidden = parentField && parentField.classList.contains("hidden-field");
+                            if (isHidden) continue;
+
+                            const key = el.name || el.id;
+                            const value = el.value.trim();
+
+                            const matchedRecord = allRecords.find((record) => {
+                                return (record[key] || "").trim() === value;
+                            });
+
+                            if (matchedRecord) {
+                                showInlineError(el, "Duplicate value detected. Please modify this field.");
+                                if (!firstHighlighted) firstHighlighted = el;
+                            }
+                        }
+
+                        if (firstHighlighted) firstHighlighted.focus();
+                        Utils.alert("This entry already exists in storage. Please modify at least one field to make it unique.");
+                        return false;
+                    }
+                    return true;
+                }
+                function collect() {
+                    if (!validateVisibleFields() || !validateUniqueEntry()) return null;
+
+                    const fields = {};
+                    const multi = {};
+                    const formElements = formEl.querySelectorAll("input, select, textarea");
+
+                    for (const el of formElements) {
+                        const key = el.name || el.id;
+                        let value = el.value?.trim() || "";
+
+                        const parentField = el.closest(".field");
+                        const isHidden = parentField && parentField.classList.contains("hidden-field");
+                        if (isHidden || !value) value = "N/A";
+
+                        if (multi[key]) {
+                            multi[key].push(value);
+                        } else if (fields[key] !== undefined) {
+                            multi[key] = [fields[key], value];
+                            delete fields[key];
+                        } else {
+                            fields[key] = value;
+                        }
+                    }
+
+                    for (const k of Object.keys(multi)) {
+                        fields[k] = multi[k];
+                    }
+
+                    if (!Utils.softEmailValid(fields.customerEmail)) {
+                        Utils.announce("Email format looks unusual.");
+                    }
+
+                    return { fields };
+                }
+                function buildEntry() {
+                    if (!validateVisibleFields() || !validateUniqueEntry()) return null;
+
+                    const entry = {};
+                    const formElements = dataForm.querySelectorAll("input, select, textarea");
+
+                    for (const el of formElements) {
+                        const key = el.name || el.id;
+                        let value = el.value?.trim() || "";
+
+                        const parentField = el.closest(".field");
+                        const isHidden = parentField && parentField.classList.contains("hidden-field");
+                        if (isHidden || !value) value = "N/A";
+
+                        if (el.type === "datetime-local" && value !== "N/A") {
+                            const localDate = new Date(value);
+                            entry[key] = localDate.toLocaleString("en-US", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: false,
+                            });
+                        } else if (el.type === "date" && value !== "N/A") {
+                            // Convert yyyy-MM-dd to mm/dd/yyyy
+                            const [year, month, day] = value.split("-");
+                            entry[key] = `${month}/${day}/${year}`;
+                        } else {
+                            entry[key] = value;
+                        }
+                    }
+
+                    const existingId = dataForm.dataset.editingId;
+                    if (existingId) {
+                        entry.id = existingId;
+                    }
+
+                    entry.capturedAt = new Date().toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour12: false,
+                    });
+
+                    return entry;
+                }
+                function populate(entry) {
+                    dataForm.dataset.editingId = entry.id;
+
+                    Object.keys(entry).forEach((key) => {
+                        if (key === "id" || key === "capturedAt") return;
+
+                        const expectedId = `fld${key.charAt(0).toUpperCase() + key.slice(1)}`;
+                        const field = document.getElementById(expectedId);
+
+                        if (!field || entry[key] === "N/A") return;
+
+                        const rawValue = entry[key];
+
+                        if (field.type === "date") {
+                            // Convert mm/dd/yyyy to yyyy-MM-dd
+                            let dateObj;
+                            if (/^\d{2}\/\d{2}\/\d{4}/.test(rawValue)) {
+                                const [month, day, year] = rawValue.split("/");
+                                dateObj = new Date(`${year}-${month}-${day}`);
+                            } else {
+                                dateObj = new Date(rawValue);
+                            }
+
+                            const formatted = dateObj.getFullYear() + "-" + String(dateObj.getMonth() + 1).padStart(2, "0") + "-" + String(dateObj.getDate()).padStart(2, "0");
+
+                            field.value = formatted;
+                        } else if (field.type === "datetime-local") {
+                            const dateObj = new Date(rawValue);
+                            const formatted =
+                                dateObj.getFullYear() +
+                                "-" +
+                                String(dateObj.getMonth() + 1).padStart(2, "0") +
+                                "-" +
+                                String(dateObj.getDate()).padStart(2, "0") +
+                                "T" +
+                                String(dateObj.getHours()).padStart(2, "0") +
+                                ":" +
+                                String(dateObj.getMinutes()).padStart(2, "0");
+
+                            field.value = formatted;
+                        } else {
+                            field.value = rawValue;
+
+                            if (key === "direction" || key === "productCategory") {
+                                field.dispatchEvent(new Event("change"));
+                            }
+                        }
+                    });
+
+                    if (entry.productSubcategory) {
+                        const subCategoryField = document.getElementById("fldProductSubcategory");
+                        setTimeout(() => {
+                            if (subCategoryField) subCategoryField.value = entry.productSubcategory;
+                        }, 50);
+                    }
+                }
+				
+				function resetForm() {
+					dataForm.reset();
+					dataForm.removeAttribute("data-editing-id");
+					searchInput.value = null;
+					DataTable.render();
+
+					const formElements = formEl.querySelectorAll("input, select, textarea");
+					formElements.forEach((el) => {
+						clearInlineError(el);
+					});
+
+					const dateInput = document.getElementById("fldDate");
+					if (dateInput) {
+						const today = new Date();
+						const yyyy = today.getFullYear();
+						const mm = String(today.getMonth() + 1).padStart(2, "0");
+						const dd = String(today.getDate()).padStart(2, "0");
+						dateInput.value = `${yyyy}-${mm}-${dd}`;
+					}
+
+					const selectFieldsToPrune = [
+						"agentName",
+						"contactDirection",
+						"channel",
+						"contactReasonMain",
+						"contactReasonSub",
+						"productCategory",
+						"productSubcategory",
+						"captureSource",
+						"closingDisposition",
+						"isVRAUtilized",
+						"isSurveySent",
+						"customerType"
+					];
+
+					selectFieldsToPrune.forEach((name) => {
+						const selectEl = document.getElementById(`fld${name.charAt(0).toUpperCase() + name.slice(1)}`);
+						if (selectEl) {
+							// Keep only the first <option> (assumed to be the default)
+							const defaultOption = selectEl.querySelector('option[value=""]');
+							if (defaultOption) {
+								selectEl.innerHTML = ""; // Clear all options
+								selectEl.appendChild(defaultOption.cloneNode(true)); // Re-add default
+								selectEl.value = ""; // Ensure it's selected
+								selectEl.dispatchEvent(new Event("change")); // Trigger any dependent logic
+						 }
+						}
+					});
+
+					const fieldsToHide = [
+						"non-voice-hoop-field",
+						"survey-email-field",
+						"non-voice-received-field",
+						"non-voice-started-field",
+						"non-voice-responded-field"
+					];
+
+					fieldsToHide.forEach((id) => {
+						const el = document.getElementById(id);
+						if (el) el.classList.add("hidden-field");
+					});
+
+					Utils.alert("Form reset. Ready for new entry. Select a Direction first.");
+				}
+
+                return { validateVisibleFields, validateUniqueEntry, collect, buildEntry, resetForm, populate };
+            })();
+        </script>
+        <script>
+            const DataTable = (() => {
+                const tableBody = document.querySelector("#storedDataTable tbody");
+
+                function render(entriesToDisplay = null) {
+                    const allEntries = entriesToDisplay ? entriesToDisplay.reverse() : Storage.getAll().reverse();
+                    tableBody.innerHTML = "";
+
+                    if (allEntries.length === 0) {
+                        const row = tableBody.insertRow();
+                        const cell = row.insertCell();
+                        cell.colSpan = 26;
+                        cell.textContent = entriesToDisplay ? "No entries match your search." : "No stored data entries found.";
+                        cell.style.textAlign = "center";
+                        cell.style.userSelect = "none";
+                        tableBody.appendChild(row);
+                        return;
+                    }
+
+                    allEntries.forEach((entry, index) => {
+                        const row = tableBody.insertRow();
+                        row.dataset.id = entry.id;
+
+                        const cells = [
+                            entry.id.substring(3, 10) + "...",
+                            entry.direction || "N/A",
+                            entry.date || "N/A",
+                            entry.agentName || "N/A",
+                            entry.contactDirection || "N/A",
+                            entry.channel || "N/A",
+                            entry.customerName || "N/A",
+                            entry.customerNumber || "N/A",
+                            entry.contactReasonMain || "N/A",
+                            entry.contactReasonSub || "N/A",
+                            entry.productCategory || "N/A",
+                            entry.productSubcategory || "N/A",
+                            entry.productModel || "N/A",
+                            entry.transactionNumber || "N/A",
+                            entry.captureSource || "N/A",
+                            entry.closingDisposition || "N/A",
+                            entry.isVRAUtilized || "N/A",
+                            entry.isHoop || "N/A",
+                            entry.isSurveySent || "N/A",
+                            entry.customerEmail || "N/A",
+                            entry.customerType || "N/A",
+                            entry.dateTimeReceived || "N/A",
+                            entry.dateTimeStarted || "N/A",
+                            entry.dateTimeResponded || "N/A",
+                            entry.notes || "N/A",
+                        ];
+
+                        cells.forEach((text) => {
+                            const cell = row.insertCell();
+                            cell.textContent = text;
+                        });
+                    });
+                }
+                function search(term) {
+                    if (!term || term.trim() === "") {
+                        render();
+                        return [];
+                    }
+                    const lowerCaseTerm = term.toLowerCase().trim();
+                    const allEntries = Storage.getAll();
+                    const filtered = allEntries.filter((entry) => {
+                        return (
+                            entry.id.toLowerCase().includes(lowerCaseTerm) ||
+                            (entry.transactionNumber && entry.transactionNumber.toLowerCase().includes(lowerCaseTerm)) ||
+                            (entry.customerNumber && entry.customerNumber.toLowerCase().includes(lowerCaseTerm))
+                        );
+                    });
+                    render(filtered);
+                    return filtered;
+                }
+                return { render, search };
+            })();
+        </script>
+        <script>
+            const Theme = (() => {
+                const root = document.documentElement;
+                function current() {
+                    const saved = Storage.getPref(CONFIG.themeKey, null);
+                    if (saved && CONFIG.themes.includes(saved)) return saved;
+                    return "dark";
+                }
+                function apply(theme) {
+                    root.setAttribute("data-theme", theme);
+                    Storage.setPref(CONFIG.themeKey, theme);
+                    Utils.announce(`Theme set to ${theme.replace("-", " ")}.`);
+                }
+                function cycle() {
+                    const cur = root.getAttribute("data-theme") || current();
+                    const idx = CONFIG.themes.indexOf(cur);
+                    const next = CONFIG.themes[(idx + 1) % CONFIG.themes.length];
+                    apply(next);
+                }
+                function init() {
+                    apply(current());
+                }
+                return { init, cycle, apply };
+            })();
+            const Typography = (() => {
+                const root = document.documentElement;
+                function getScale() {
+                    const saved = Storage.getPref(CONFIG.typoKey, 0);
+                    const attr = parseInt(root.getAttribute("data-typography-scale") || "0", 10);
+                    return Number.isFinite(attr) ? attr : saved || 0;
+                }
+                function apply(scale) {
+                    const clamped = Math.max(CONFIG.typography.min, Math.min(CONFIG.typography.max, scale));
+                    root.setAttribute("data-typography-scale", String(clamped));
+                    root.style.setProperty("--typography-scale", String(clamped));
+                    Storage.setPref(CONFIG.typoKey, clamped);
+                    Utils.announce(`Font size ${clamped === 0 ? "reset" : clamped > 0 ? "increased" : "decreased"}.`);
+                }
+                function inc() {
+                    apply(getScale() + 2);
+                }
+                function dec() {
+                    apply(getScale() - 1);
+                }
+                function reset() {
+                    apply(0);
+                }
+                function init() {
+                    apply(getScale());
+                }
+                return { inc, dec, reset, init };
+            })();
+            const A11y = (() => {
+                function bindShortcuts() {
+                    document.addEventListener("keydown", (e) => {
+                        if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+                            if (e.key === "+") {
+                                e.preventDefault();
+                                Typography.inc();
+                            } else if (e.key === "-") {
+                                e.preventDefault();
+                                Typography.dec();
+                            }
+                        }
+                    });
+                }
+                return { bindShortcuts };
+            })();
+        </script>
+        <script>
+            function updateRecordCountDisplay() {
+                const countElement = document.getElementById("recordCountDisplay"); // For View Records button
+                const labelElement = document.getElementById("recordCountLabel"); // For Local Storage Usage label
+				const clearElement = document.getElementById("recordCountForClearing"); // For Clearing Records
+
+                if (!countElement || !labelElement || typeof Storage === "undefined" || typeof Storage.getAll !== "function") {
+                    console.error("Cannot update record count: Display element or Storage module not found.");
+                    return;
+                }
+
+                try {
+                    const dataArray = Storage.getAll();
+                    const count = Array.isArray(dataArray) ? dataArray.length : 0;
+                    countElement.textContent = count > 0 ? `(${count})` : "";
+                    labelElement.textContent = count > 0 ? `${count}` : "0";
+                    clearElement.textContent = count > 0 ? `(${count})` : "";
+                } catch (error) {
+                    console.error("Error retrieving data via Storage.getAll():", error);
+                    countElement.textContent = "";
+                    labelElement.textContent = "0";
+                    clearElement.textContent = "";
+                }
+            }
+
+            (function init() {
+                Theme.init();
+                Typography.init();
+                A11y.bindShortcuts();
+                DataTable.render();
+                const dataForm = document.getElementById("dataForm");
+                const btnSave = document.getElementById("btnSave");
+                const btnSaveAsNew = document.getElementById("btnSaveAsNew");
+                const btnExport = document.getElementById("btnExport");
+                const btnClear = document.getElementById("btnClear");
+                const btnReset = document.getElementById("btnReset");
+				
+				const directionSelect = document.getElementById("fldDirection");
+				const agentSelect = document.getElementById("fldAgentName");
+				const contactDirectionSelect = document.getElementById("fldContactDirection");
+				const channelSelect = document.getElementById("fldChannel");
+				const contactReasonMain = document.getElementById("fldContactReasonMain");
+				const contactReasonSub = document.getElementById("fldContactReasonSub");
+				const productCategorySelect = document.getElementById("fldProductCategory");
+				const productSubcategorySelect = document.getElementById("fldProductSubcategory");
+				const captureSource = document.getElementById("fldCaptureSource");
+				const closingDispo = document.getElementById("fldClosingDisposition");
+				const isVRAUtilized = document.getElementById("fldIsVRAUtilized");
+				const hoopSelect = document.getElementById("fldHoop");
+				const isSurveySent = document.getElementById("fldIsSurveySent");
+				const customerType = document.getElementById("fldCustomerType");
+				
+                const nonVoiceFields = [
+                    document.getElementById("non-voice-hoop-field"),
+                    document.getElementById("non-voice-received-field"),
+                    document.getElementById("non-voice-started-field"),
+                    document.getElementById("non-voice-responded-field"),
+                ];
+                const btnSearch = document.getElementById("btnSearch");
+                const searchInput = document.getElementById("searchInput");
+                const btnEdit = document.getElementById("btnEdit");
+                const btnDelete = document.getElementById("btnDelete");
+                const fileInput = document.getElementById("fileInput");
+                const btnImport = document.getElementById("btnImport");
+
+                btnSave.addEventListener("click", () => {
+                    const formElement = document.getElementById("dataForm");
+
+                    if (formElement && formElement.hasAttribute("data-editing-id")) {
+                        Utils.alert("Form is in 'Edit Mode'. To save this as a new record, click 'Save As New'.");
+                        return;
+                    }
+
+                    const entry = Form.buildEntry();
+                    delete entry.id;
+
+                    const ok = Storage.append(entry);
+                    if (ok) {
+                        updateRecordCountDisplay();
+                        DataTable.render();
+                        checkQuotaAndPromptExport();
+                        dataForm.reset();
+                    } else {
+                        Utils.alert("Failed to save data.");
+                    }
+                });
+
+                btnSaveAsNew.addEventListener("click", () => {
+                    const formElement = document.getElementById("dataForm");
+
+                    // Clear editing mode to prevent accidental deletion or overwrite
+                    if (formElement && formElement.hasAttribute("data-editing-id")) {
+                        formElement.removeAttribute("data-editing-id");
+                    }
+
+                    const entry = Form.buildEntry();
+                    delete entry.id;
+
+                    const ok = Storage.append(entry);
+                    if (ok) {
+                        updateRecordCountDisplay();
+                        DataTable.render();
+                        checkQuotaAndPromptExport();
+                        Utils.alert("Saved as a new record. Original entry remains unchanged.");
+                    } else {
+                        Utils.alert("Failed to save data.");
+                    }
+                });
+
+                btnExport.addEventListener("click", () => {
+                    Exporter.exportAll("raw_datacaps.csv");
+                });
+
+                btnClear.addEventListener("click", async () => {
+                    const confirmed = await Utils.confirm("Are you sure you want to clear all stored data? This cannot be undone.");
+                    if (confirmed) {
+                        const ok = Storage.clearAll();
+                        Utils.alert(ok ? "All stored data cleared." : "Failed to clear data.");
+                        if (ok) {
+                            updateRecordCountDisplay();
+                            DataTable.render();
+                            searchInput.value = "";
+                            checkQuotaAndPromptExport();
+                            dataForm.removeAttribute("data-editing-id");
+                        }
+                    }
+                });
+
+                btnReset.addEventListener("click", Form.resetForm);
+
+                btnSearch.addEventListener("click", () => {
+                    const searchTerm = searchInput.value.trim();
+                    dataForm.removeAttribute("data-editing-id");
+                    if (!searchTerm) {
+                        Utils.alert("Please enter a term (ID, Transaction, or Phone) to search.");
+                        return;
+                    }
+                    const filteredEntries = DataTable.search(searchTerm);
+                    if (filteredEntries && filteredEntries.length === 1) {
+                        const entry = filteredEntries[0];
+                        Form.populate(entry);
+                        Utils.alert(`Found unique record ID ${entry.id.substring(3, 10)}... and loaded for editing. Click EDIT to update.`);
+                    } else if (filteredEntries && filteredEntries.length > 1) {
+                        Utils.alert(`Found ${filteredEntries.length} records. Please use the table to confirm the entry, then click EDIT/Update.`);
+                    } else {
+                        Utils.alert("No records found matching your search term.");
+                    }
+                });
+
+                btnEdit.addEventListener("click", () => {
+                    const formElement = document.getElementById("dataForm");
+                    const existingId = formElement ? formElement.dataset.editingId : null;
+                    if (!existingId) {
+                        Utils.alert("No record loaded for editing. Please use Search first.");
+                        return;
+                    }
+                    if (Form.validateVisibleFields()) {
+                        const updatedEntry = Form.buildEntry();
+                        if (!updatedEntry.id) {
+                            Utils.alert("Update failed: Record ID is missing.");
+                            return;
+                        }
+                        const ok = Storage.update(updatedEntry);
+                        if (ok) {
+                            updateRecordCountDisplay();
+                            DataTable.render();
+                            Form.resetForm();
+                            Utils.alert(`Entry ID ${updatedEntry.id.substring(3, 10)}... UPDATED successfully! Form reset.`);
+                        } else {
+                            Utils.alert("Failed to update data.");
+                        }
+                    }
+                });
+
+                btnDelete.addEventListener("click", async () => {
+                    const formElement = document.getElementById("dataForm");
+                    const existingId = formElement ? formElement.dataset.editingId : null;
+                    if (!existingId) {
+                        Utils.alert("No record loaded for deletion. Please use the Search button first.");
+                        return;
+                    }
+                    const confirmed = await Utils.confirm(`Are you sure you want to permanently delete the entry ID ${existingId.substring(3, 10)}...?`);
+                    if (confirmed) {
+                        const ok = Storage.remove(existingId);
+                        if (ok) {
+                            updateRecordCountDisplay();
+                            Utils.alert("Entry deleted successfully! Table updated.");
+                            searchInput.value = "";
+                            Form.resetForm();
+                            DataTable.render();
+                        } else {
+                            Utils.alert("Failed to delete entry. It may no longer exist.");
+                        }
+                    }
+                });
+
+                btnImport.addEventListener("click", () => {
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener("change", () => {
+                    Importer.importData();
+                });
+
+                // View Records/Table Modal
+                document.addEventListener("DOMContentLoaded", () => {
+                    const modal = document.getElementById("recordsModal");
+                    const openButton = document.getElementById("btnViewRecords");
+                    const closeButton = modal.querySelector(".close-button");
+                    const modalContent = modal.querySelector(".modal-content");
+                    const main = document.getElementById("main");
+                    function openModal() {
+                        DataTable.render();
+                        modal.style.display = "flex";
+                        modal.setAttribute("aria-hidden", "false");
+                        document.body.style.overflow = "hidden";
+                        closeButton.focus();
+                    }
+                    function closeModal() {
+                        modal.style.display = "none";
+                        modal.setAttribute("aria-hidden", "true");
+                        document.body.style.overflow = "";
+                        openButton.focus();
+                    }
+                    openButton.addEventListener("click", openModal);
+                    closeButton.addEventListener("click", closeModal);
+                    document.addEventListener("click", (e) => {
+                        const isModalOpen = modal.style.display === "flex";
+                        if (!isModalOpen) return;
+                        const clickedOutsideModal = !modalContent.contains(e.target);
+                        const clickedOnBackdrop = modal.contains(e.target);
+                        if (clickedOutsideModal && clickedOnBackdrop) {
+                            closeModal();
+                        }
+                    });
+                    document.addEventListener("keydown", (e) => {
+                        if (e.key === "Escape" && modal.style.display === "flex") {
+                            closeModal();
+                        }
+                    });
+                });
+
+                // Import Preview / Duplicates Modal
+                document.addEventListener("DOMContentLoaded", () => {
+                    const modal = document.getElementById("duplicatesModal");
+                    const closeButton = modal.querySelector(".close-button");
+                    const modalContent = modal.querySelector(".modal-content");
+
+                    function openModal() {
+                        modal.style.display = "flex";
+                        modal.setAttribute("aria-hidden", "false");
+                        document.body.style.overflow = "hidden";
+                        closeButton.focus();
+                    }
+
+                    function closeModal() {
+                        modal.style.display = "none";
+                        modal.setAttribute("aria-hidden", "true");
+                        document.body.style.overflow = "";
+                    }
+
+                    // Attach to global scope for programmatic use
+                    window.openDuplicatesModal = function () {
+                        const modal = document.getElementById("duplicatesModal");
+                        const closeButton = modal.querySelector(".close-button");
+                        const tableInner = document.getElementById("duplicatesTableInner");
+                        const firstRow = document.querySelector("#duplicatesDataTable tbody tr");
+
+                        modal.style.display = "flex";
+                        modal.setAttribute("aria-hidden", "false");
+                        document.body.style.overflow = "hidden";
+                        closeButton.focus();
+
+                        if (firstRow && tableInner) {
+                            firstRow.scrollIntoView({ behavior: "smooth", block: "start" });
+                            firstRow.classList.add("highlight-row");
+                        }
+                    };
+
+                    // Optional manual trigger (if you keep a button)
+                    const openButton = document.getElementById("btnViewDuplicates");
+                    if (openButton) {
+                        openButton.addEventListener("click", openModal);
+                    }
+
+                    closeButton.addEventListener("click", closeModal);
+
+                    document.addEventListener("click", (e) => {
+                        const isModalOpen = modal.style.display === "flex";
+                        if (!isModalOpen) return;
+                        const clickedOutsideModal = !modalContent.contains(e.target);
+                        const clickedOnBackdrop = modal.contains(e.target);
+                        if (clickedOutsideModal && clickedOnBackdrop) {
+                            closeModal();
+                        }
+                    });
+
+                    document.addEventListener("keydown", (e) => {
+                        if (e.key === "Escape" && modal.style.display === "flex") {
+                            closeModal();
+                        }
+                    });
+                });
+
+                document.addEventListener("DOMContentLoaded", updateRecordCountDisplay);
+                document.getElementById("btnTheme").addEventListener("click", () => Theme.cycle());
+                document.getElementById("btnFontUp").addEventListener("click", () => Typography.inc());
+                document.getElementById("btnFontReset").addEventListener("click", () => Typography.reset());
+                document.getElementById("btnFontDown").addEventListener("click", () => Typography.dec());
+				
+                function setOptions(selectElement, options, placeholderText = "Select an option") {
+                    selectElement.innerHTML = "";
+                    const placeholder = document.createElement("option");
+                    placeholder.value = "";
+                    placeholder.textContent = placeholderText;
+                    selectElement.appendChild(placeholder);
+                    options.forEach((opt) => {
+                        const option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        selectElement.appendChild(option);
+                    });
+                }
+				
+				function resetSelect(selectElement, placeholderText = "Select Option") {
+					selectElement.innerHTML = `<option value="">${placeholderText}</option>`;
+				}
+
+			        directionSelect.addEventListener("change", () => {
+                    const value = directionSelect.value;
+                    const isNonVoice = value === "Non-Voice";
+
+                    // Show/hide non-voice fields
+                    nonVoiceFields.forEach((field) => {
+                        if (isNonVoice) {
+                            field.classList.remove("hidden-field");
+                        } else {
+                            field.classList.add("hidden-field");
+                        }
+                    });
+
+                    // Helper: Sort options alphabetically
+                    const sortOptions = (arr) => arr.slice().sort((a, b) => a.localeCompare(b));
+
+                    // Update Contact Direction and Contact Reason
+                    if (value === "Voice") {
+                        setOptions(contactDirectionSelect, sortOptions(["Inbound", "Outbound", "Service Call", "Transfer Call"]), "Select Contact Direction");
+                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore", "Malaysia"]), "Select Channel");
+
+                        contactReasonMain.addEventListener("change", function () {
+                            const subReasonMap = {
+                                Complaint: sortOptions([
+									"CMP: Rude Behavior",
+									"CMP: Unprofessional Handling",
+									"CMP: Incorrect Information",
+									"CMP: Incomplete Information",
+									"CMP: Long Hold Time",
+									"CMP: No Follow-up",
+									"CMP: Delay in Service",
+									"CMP: Poor Repair Quality",
+									"CMP: Mishandling of Unit",
+									"CMP: Others (specify)",
+                                ]),
+                                Compliment: sortOptions([
+									"CPL: Courteous & Professional",
+									"CPL: Complete Information Provided",
+									"CPL: Quick Resolution",
+									"CPL: Excellent Communication",
+									"CPL: Followed Up Promptly",
+									"CPL: Clear Updates Provided",
+									"CPL: Quality Service or Repair",
+									"CPL: Handled Unit with Care",
+									"CPL: Others (specify)",
+                                ]),
+                                General: sortOptions([
+									"GEN: Company Info Inquiry",
+									"GEN: Career Opportunities (EPPI)",
+									"GEN: Career Opportunities (Internal)",
+									"GEN: Product Info Request",
+									"GEN: Promotions & Events",
+									"GEN: Documentation Request",
+									"GEN: General Feedback",
+									"GEN: Call Transfer Request",
+									"GEN: Call Escalation Request",
+									"GEN: Looking for Someone",
+									"GEN: Looking for Department",
+									"GEN: Internal Contact Info",
+									"GEN: Test Call / Email",
+									"GEN: Leasing Options",
+									"GEN: Volume Discount",
+									"GEN: Financing Options",
+									"GEN: Sponsorship Inquiry",
+									"GEN: Environmental Ratings",
+									"GEN: Others (specify)",
+                                ]),
+                                "Language Support": sortOptions([
+									"LANG: Malay/Bahasa", 
+									"LANG: Chinese/Mandarin", 
+									"LANG: Others (specify)",
+									]),
+                                "Line Issue": sortOptions([
+									"LINE: Distorted Line", 
+									"LINE: Line Disconnected", 
+									"LINE: Ghost Call", 
+									"LINE: Drop Call",
+								]),
+									Sales: sortOptions([
+									"WTB: Units",
+									"WTB: Consumables",
+									"WTB: Accessories",
+									"WTB: Parts",
+									"WTB: Bulk Purchase",
+									"WTB: Warranty Extension",
+									"WTB: Demo Units",
+									"PRI: Units",
+									"PRI: Consumables",
+									"PRI: Accessories",
+									"PRI: Parts",
+									"SPEC: Units",
+									"SPEC: Consumables",
+									"SPEC: Accessories",
+									"SPEC: Parts",
+									"SPEC: Product Overview",
+									"SPEC: Compatibility",
+									"SPEC: Ink Authenticity",
+									"SPEC: Warranty Terms",
+									"SPEC: Dimensions & Weight",
+									"QTN: Request",
+									"QTN: Follow-up",
+									"QTN: Revision",
+									"QTN: Validity",
+									"QTN: Bulk Order Quote",
+									"DLS: Application",
+									"DLS: Requirements",
+									"DLS: Status Update",
+									"PROMO: Trade-in Offers",
+									"PROMO: Redemption",
+									"PROMO: Seasonal Discounts",
+									"PROMO: Bundle Deals",
+									"SLS: Others (specify)",
+                                ]),
+                                Service: sortOptions([    
+									"REP: DOA Related",
+									"REP: Diagnostic",
+									"REP: Ink/Mbox Delivery",
+									"REP: Firmware Update",
+									"REP: PMS Calling",
+									"REP: Meter Reading",
+									"REP: Repair Follow-up",
+									"QTN: Quote Request",
+									"QTN: Quote Follow-up",
+									"QTN: Quote Revision",
+									"ASP: Application",
+									"ASP: Requirements",
+									"ASP: Status Update",
+									"ASP: Finding Service Center",
+									"REP: Others (specify)",                                
+								]),
+                                Technical: sortOptions([  
+									"PRT: Garbage Print",
+									"PRT: Streaks",
+									"PRT: Smudging",
+									"PRT: Banding / Missing Lines",
+									"PRT: Missing Color",
+									"PRT: Blank Print",
+									"PRT: Faded Print",
+									"PRT: Blurry Output",
+									"PRT: Alignment Issues",
+									"PRT: Pixelation",
+									"PRT: Inkpad EOL",
+									"PRT: Maintenance Box EOL",
+									"PRT: Maintenance Box Not Recognized",
+									"PRT: Paper Curling",
+									"PRT: Print Head Issue",
+									"PRT: Ink Not Recognized",
+									"PRT: Ink Smearing",
+									"PRT: Incorrect Margins",
+									"PPR: ADF Issue",
+									"PPR: Paper Jam",
+									"PPR: Skewed Feed",
+									"PPR: Multi-Sheet Feed",
+									"PPR: No Paper Feed",
+									"PPR: Wrong Size Detection",
+									"PPR: Paper Not Ejected",
+									"PPR: Duplex Error",
+									"PPR: Tray Empty Error",
+									"PPR: Broken Part(s)",
+									"PPR: Paper Size Mismatch",
+									"PPR: Unsupported Paper Type",
+									"PNL: Unresponsive Panel",
+									"PNL: Frozen Display",
+									"PNL: Error Code",
+									"PNL: Wrong Language",
+									"PNL: Touchscreen Not Working",
+									"PNL: Flickering Panel",
+									"PNL: Buttons Not Responding",
+									"PNL: Backlight Dim",
+									"PNL: Panel Calibration Issue",
+									"PNL: Block Dot",
+									"PNL: Blinking Error Light",
+									"PNL: All lights Blinking",
+									"PWR: No Power",
+									"PWR: Sudden Power Off",
+									"PWR: Power Button Issue",
+									"PWR: Power Supply Noise",
+									"PWR: Loose/Damaged Cord",
+									"PWR: Fatal Error",
+									"PWR: Overheating Power Supply",
+									"PWR: Auto Restart Loop",
+									"SCN: Blurry Scan",
+									"SCN: Blank Scan",
+									"SCN: Low Resolution",
+									"SCN: Color Distortion",
+									"SCN: Lines/Artifacts",
+									"SCN: File Not Saved",
+									"SCN: Scan Cropping Issue",
+									"SCN: Scan Orientation Wrong",
+									"SCN: Scanner not Working",
+									"SCN: Scan to Email Issue",
+									"SCN: Scan to Cloud Issue",
+									"CPY: Faded Copy",
+									"CPY: Dark Copy",
+									"CPY: Skewed Copy",
+									"CPY: Lines on Copy",
+									"CPY: Blank Copy",
+									"CPY: Misaligned Copy",
+									"CPY: Size Mismatch",
+									"CPY: Copy Cropping Issue",
+									"CPY: Copy Orientation Wrong",
+									"WF: Wi-Fi Setup",
+									"WF: Wi-Fi Not Detected",
+									"WF: Wi-Fi Drops/Intermittent",
+									"WF: Wrong Wi-Fi Password",
+									"WF: Weak Wi-Fi Signal",
+									"WF: Wi-Fi LED Off",
+									"WF: Wi-Fi Out of Order",
+									"WF: Wi-Fi Authentication Error",
+									"WFD: Wi-Fi Direct Setup",
+									"WFD: Wi-Fi Direct Not Detected",
+									"WFD: Wi-Fi Direct Drops/Intermittent",
+									"WFD: Wrong Wi-Fi Direct Password",
+									"WFD: Weak Wi-Fi Direct Signal",
+									"WFD: Wi-Fi Direct LED Off",
+									"WFD: Wi-Fi Direct Out of Order",
+									"WFD: Wi-Fi Direct Authentication Error",
+									"USB: USB Not Recognized",
+									"USB: USB Drops/Intermittent",
+									"USB: USB Port Damaged",
+									"USB: Driver Missing",
+									"USB: Slow Data Transfer",
+									"ETH: LAN No Connection",
+									"ETH: IP Conflict",
+									"ETH: Cable Not Detected",
+									"ETH: Slow Network",
+									"ETH: Config Error",
+									"ETH: DHCP Failure",
+									"MBL: Smart Panel Issue",
+									"MBL: iPrint Issue",
+									"MBL: iProjection Issue",
+									"MBL: Air Print Issue",
+									"PROJ: No Display",
+									"PROJ: Blurry Projection",
+									"PROJ: Color Distortion",
+									"PROJ: Flickering Image",
+									"PROJ: Keystone Error",
+									"PROJ: Projector Not Detected",
+									"PROJ: Overheating",
+									"PROJ: Lamp Warning/Error",
+									"PROJ: No Audio Output",
+									"PROJ: HDMI Port Not Detected",
+									"PROJ: Lens Focus Issue",
+									"TECH: Firmware Update Failed",
+									"TECH: Driver Installation Error",
+									"TECH: App Connectivity Issue",
+									"TECH: Others (specify)",
+								]),
+                                Warranty: sortOptions([
+									"WRTY: Warranty Claim",
+									"WRTY: Validation Request",
+									"WRTY: Period Inquiry",
+									"WRTY: Terms Clarification",
+									"WRTY: Extended Warranty Purchase",
+									"WRTY: Extended Warranty Options",
+									"WRTY: Proof of Purchase Submission",
+									"WRTY: Registration Assistance",
+									"WRTY: Transfer Request",
+									"WRTY: MYEpson Portal Assistance",
+									"WRTY: Others (specify)",                             
+								]),
+                            };
+                            const selectedMainReason = this.value;
+                            if (subReasonMap[selectedMainReason]) {
+                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
+                            } else {
+                                resetSelect(contactReasonSub, "Select Main Reason first");
+                            }
+                        });
+                    } else if (value === "EasyCare") {
+                        setOptions(contactDirectionSelect, sortOptions(["Inbound", "Outbound", "Non-Voice"]), "Select Contact Direction");
+                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore"]), "Select Channel");
+
+                        contactReasonMain.addEventListener("change", function () {
+                            const subReasonMap = {
+                                PMS: sortOptions([
+                                    "PMS: Scheduled PMS Calling",
+                                    "PMS: Scheduled Meter Reading",
+                                    "PMS: Others (specify)",
+                                ]),
+                                Service: sortOptions([
+                                    "REP: For Dispatch",
+                                    "REP: For Ink Delivery",
+                                    "REP: For Mbox Delivery",
+                                    "REP: Others (specify)",
+                                ]),
+                                Technical: sortOptions([  
+									"PRT: Garbage Print",
+									"PRT: Streaks",
+									"PRT: Smudging",
+									"PRT: Banding / Missing Lines",
+									"PRT: Missing Color",
+									"PRT: Blank Print",
+									"PRT: Faded Print",
+									"PRT: Blurry Output",
+									"PRT: Alignment Issues",
+									"PRT: Pixelation",
+									"PRT: Inkpad EOL",
+									"PRT: Maintenance Box EOL",
+									"PRT: Maintenance Box Not Recognized",
+									"PRT: Paper Curling",
+									"PRT: Print Head Issue",
+									"PRT: Ink Not Recognized",
+									"PRT: Ink Smearing",
+									"PRT: Incorrect Margins",
+									"PPR: ADF Issue",
+									"PPR: Paper Jam",
+									"PPR: Skewed Feed",
+									"PPR: Multi-Sheet Feed",
+									"PPR: No Paper Feed",
+									"PPR: Wrong Size Detection",
+									"PPR: Paper Not Ejected",
+									"PPR: Duplex Error",
+									"PPR: Tray Empty Error",
+									"PPR: Broken Part(s)",
+									"PPR: Paper Size Mismatch",
+									"PPR: Unsupported Paper Type",
+									"PNL: Unresponsive Panel",
+									"PNL: Frozen Display",
+									"PNL: Error Code",
+									"PNL: Wrong Language",
+									"PNL: Touchscreen Not Working",
+									"PNL: Flickering Panel",
+									"PNL: Buttons Not Responding",
+									"PNL: Backlight Dim",
+									"PNL: Panel Calibration Issue",
+									"PNL: Block Dot",
+									"PNL: Blinking Error Light",
+									"PNL: All lights Blinking",
+									"PWR: No Power",
+									"PWR: Sudden Power Off",
+									"PWR: Power Button Issue",
+									"PWR: Power Supply Noise",
+									"PWR: Loose/Damaged Cord",
+									"PWR: Fatal Error",
+									"PWR: Overheating Power Supply",
+									"PWR: Auto Restart Loop",
+									"SCN: Blurry Scan",
+									"SCN: Blank Scan",
+									"SCN: Low Resolution",
+									"SCN: Color Distortion",
+									"SCN: Lines/Artifacts",
+									"SCN: File Not Saved",
+									"SCN: Scan Cropping Issue",
+									"SCN: Scan Orientation Wrong",
+									"SCN: Scanner not Working",
+									"SCN: Scan to Email Issue",
+									"SCN: Scan to Cloud Issue",
+									"CPY: Faded Copy",
+									"CPY: Dark Copy",
+									"CPY: Skewed Copy",
+									"CPY: Lines on Copy",
+									"CPY: Blank Copy",
+									"CPY: Misaligned Copy",
+									"CPY: Size Mismatch",
+									"CPY: Copy Cropping Issue",
+									"CPY: Copy Orientation Wrong",
+									"WF: Wi-Fi Setup",
+									"WF: Wi-Fi Not Detected",
+									"WF: Wi-Fi Drops/Intermittent",
+									"WF: Wrong Wi-Fi Password",
+									"WF: Weak Wi-Fi Signal",
+									"WF: Wi-Fi LED Off",
+									"WF: Wi-Fi Out of Order",
+									"WF: Wi-Fi Authentication Error",
+									"WFD: Wi-Fi Direct Setup",
+									"WFD: Wi-Fi Direct Not Detected",
+									"WFD: Wi-Fi Direct Drops/Intermittent",
+									"WFD: Wrong Wi-Fi Direct Password",
+									"WFD: Weak Wi-Fi Direct Signal",
+									"WFD: Wi-Fi Direct LED Off",
+									"WFD: Wi-Fi Direct Out of Order",
+									"WFD: Wi-Fi Direct Authentication Error",
+									"USB: USB Not Recognized",
+									"USB: USB Drops/Intermittent",
+									"USB: USB Port Damaged",
+									"USB: Driver Missing",
+									"USB: Slow Data Transfer",
+									"ETH: LAN No Connection",
+									"ETH: IP Conflict",
+									"ETH: Cable Not Detected",
+									"ETH: Slow Network",
+									"ETH: Config Error",
+									"ETH: DHCP Failure",
+									"MBL: Smart Panel Issue",
+									"MBL: iPrint Issue",
+									"MBL: iProjection Issue",
+									"MBL: Air Print Issue",
+									"PROJ: No Display",
+									"PROJ: Blurry Projection",
+									"PROJ: Color Distortion",
+									"PROJ: Flickering Image",
+									"PROJ: Keystone Error",
+									"PROJ: Projector Not Detected",
+									"PROJ: Overheating",
+									"PROJ: Lamp Warning/Error",
+									"PROJ: No Audio Output",
+									"PROJ: HDMI Port Not Detected",
+									"PROJ: Lens Focus Issue",
+									"TECH: Firmware Update Failed",
+									"TECH: Driver Installation Error",
+									"TECH: App Connectivity Issue",
+									"TECH: Others (specify)",
+								]),
+                            };
+                            const selectedMainReason = this.value;
+                            if (subReasonMap[selectedMainReason]) {
+                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
+                            } else {
+                                resetSelect(contactReasonSub, "Select Main Reason first");
+                            }
+                        });
+                    } else if (value === "Non-Voice") {
+                        setOptions(contactDirectionSelect, sortOptions(["Email", "FB: Messenger", "FB: Post", "Instagram", "Linked In", "Service Call", "Transfer Call", "Viber Demo", "Webchat", "X (Twitter)"]), "Select Contact Direction");
+                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore", "Malaysia"]), "Select Channel");
+
+                        contactReasonMain.addEventListener("change", function () {
+                            const subReasonMap = {
+                                Complaint: sortOptions([
+									"CMP: Rude Behavior",
+									"CMP: Unprofessional Handling",
+									"CMP: Incorrect Information",
+									"CMP: Incomplete Information",
+									"CMP: Long Hold Time",
+									"CMP: No Follow-up",
+									"CMP: Delay in Service",
+									"CMP: Poor Repair Quality",
+									"CMP: Mishandling of Unit",
+									"CMP: Others (specify)",
+                                ]),
+                                Compliment: sortOptions([
+									"CPL: Courteous & Professional",
+									"CPL: Complete Information Provided",
+									"CPL: Quick Resolution",
+									"CPL: Excellent Communication",
+									"CPL: Followed Up Promptly",
+									"CPL: Clear Updates Provided",
+									"CPL: Quality Service or Repair",
+									"CPL: Handled Unit with Care",
+									"CPL: Others (specify)",
+                                ]),
+                                General: sortOptions([
+									"GEN: Company Info Inquiry",
+									"GEN: Career Opportunities (EPPI)",
+									"GEN: Career Opportunities (Internal)",
+									"GEN: Product Info Request",
+									"GEN: Promotions & Events",
+									"GEN: Documentation Request",
+									"GEN: General Feedback",
+									"GEN: Call Transfer Request",
+									"GEN: Call Escalation Request",
+									"GEN: Looking for Someone",
+									"GEN: Looking for Department",
+									"GEN: Internal Contact Info",
+									"GEN: Test Call / Email",
+									"GEN: Leasing Options",
+									"GEN: Volume Discount",
+									"GEN: Financing Options",
+									"GEN: Sponsorship Inquiry",
+									"GEN: Environmental Ratings",
+									"GEN: Others (specify)",
+                                ]),
+                                "Language Support": sortOptions([
+									"LANG: Malay/Bahasa", 
+									"LANG: Chinese/Mandarin", 
+									"LANG: Others (specify)",
+									]),
+                                "Line Issue": sortOptions([
+									"LINE: Distorted Line", 
+									"LINE: Line Disconnected", 
+									"LINE: Ghost Call", 
+									"LINE: Drop Call",
+								]),
+									Sales: sortOptions([
+									"WTB: Units",
+									"WTB: Consumables",
+									"WTB: Accessories",
+									"WTB: Parts",
+									"WTB: Bulk Purchase",
+									"WTB: Warranty Extension",
+									"WTB: Demo Units",
+									"PRI: Units",
+									"PRI: Consumables",
+									"PRI: Accessories",
+									"PRI: Parts",
+									"SPEC: Units",
+									"SPEC: Consumables",
+									"SPEC: Accessories",
+									"SPEC: Parts",
+									"SPEC: Product Overview",
+									"SPEC: Compatibility",
+									"SPEC: Ink Authenticity",
+									"SPEC: Warranty Terms",
+									"SPEC: Dimensions & Weight",
+									"QTN: Request",
+									"QTN: Follow-up",
+									"QTN: Revision",
+									"QTN: Validity",
+									"QTN: Bulk Order Quote",
+									"DLS: Application",
+									"DLS: Requirements",
+									"DLS: Status Update",
+									"PROMO: Trade-in Offers",
+									"PROMO: Redemption",
+									"PROMO: Seasonal Discounts",
+									"PROMO: Bundle Deals",
+									"SLS: Others (specify)",
+                                ]),
+                                Service: sortOptions([    
+									"REP: DOA Related",
+									"REP: Diagnostic",
+									"REP: Ink/Mbox Delivery",
+									"REP: Firmware Update",
+									"REP: PMS Calling",
+									"REP: Meter Reading",
+									"REP: Repair Follow-up",
+									"QTN: Quote Request",
+									"QTN: Quote Follow-up",
+									"QTN: Quote Revision",
+									"ASP: Application",
+									"ASP: Requirements",
+									"ASP: Status Update",
+									"ASP: Finding Service Center",
+									"REP: Others (specify)",                                
+								]),
+                                Technical: sortOptions([  
+									"PRT: Garbage Print",
+									"PRT: Streaks",
+									"PRT: Smudging",
+									"PRT: Banding / Missing Lines",
+									"PRT: Missing Color",
+									"PRT: Blank Print",
+									"PRT: Faded Print",
+									"PRT: Blurry Output",
+									"PRT: Alignment Issues",
+									"PRT: Pixelation",
+									"PRT: Inkpad EOL",
+									"PRT: Maintenance Box EOL",
+									"PRT: Maintenance Box Not Recognized",
+									"PRT: Paper Curling",
+									"PRT: Print Head Issue",
+									"PRT: Ink Not Recognized",
+									"PRT: Ink Smearing",
+									"PRT: Incorrect Margins",
+									"PPR: ADF Issue",
+									"PPR: Paper Jam",
+									"PPR: Skewed Feed",
+									"PPR: Multi-Sheet Feed",
+									"PPR: No Paper Feed",
+									"PPR: Wrong Size Detection",
+									"PPR: Paper Not Ejected",
+									"PPR: Duplex Error",
+									"PPR: Tray Empty Error",
+									"PPR: Broken Part(s)",
+									"PPR: Paper Size Mismatch",
+									"PPR: Unsupported Paper Type",
+									"PNL: Unresponsive Panel",
+									"PNL: Frozen Display",
+									"PNL: Error Code",
+									"PNL: Wrong Language",
+									"PNL: Touchscreen Not Working",
+									"PNL: Flickering Panel",
+									"PNL: Buttons Not Responding",
+									"PNL: Backlight Dim",
+									"PNL: Panel Calibration Issue",
+									"PNL: Block Dot",
+									"PNL: Blinking Error Light",
+									"PNL: All lights Blinking",
+									"PWR: No Power",
+									"PWR: Sudden Power Off",
+									"PWR: Power Button Issue",
+									"PWR: Power Supply Noise",
+									"PWR: Loose/Damaged Cord",
+									"PWR: Fatal Error",
+									"PWR: Overheating Power Supply",
+									"PWR: Auto Restart Loop",
+									"SCN: Blurry Scan",
+									"SCN: Blank Scan",
+									"SCN: Low Resolution",
+									"SCN: Color Distortion",
+									"SCN: Lines/Artifacts",
+									"SCN: File Not Saved",
+									"SCN: Scan Cropping Issue",
+									"SCN: Scan Orientation Wrong",
+									"SCN: Scanner not Working",
+									"SCN: Scan to Email Issue",
+									"SCN: Scan to Cloud Issue",
+									"CPY: Faded Copy",
+									"CPY: Dark Copy",
+									"CPY: Skewed Copy",
+									"CPY: Lines on Copy",
+									"CPY: Blank Copy",
+									"CPY: Misaligned Copy",
+									"CPY: Size Mismatch",
+									"CPY: Copy Cropping Issue",
+									"CPY: Copy Orientation Wrong",
+									"WF: Wi-Fi Setup",
+									"WF: Wi-Fi Not Detected",
+									"WF: Wi-Fi Drops/Intermittent",
+									"WF: Wrong Wi-Fi Password",
+									"WF: Weak Wi-Fi Signal",
+									"WF: Wi-Fi LED Off",
+									"WF: Wi-Fi Out of Order",
+									"WF: Wi-Fi Authentication Error",
+									"WFD: Wi-Fi Direct Setup",
+									"WFD: Wi-Fi Direct Not Detected",
+									"WFD: Wi-Fi Direct Drops/Intermittent",
+									"WFD: Wrong Wi-Fi Direct Password",
+									"WFD: Weak Wi-Fi Direct Signal",
+									"WFD: Wi-Fi Direct LED Off",
+									"WFD: Wi-Fi Direct Out of Order",
+									"WFD: Wi-Fi Direct Authentication Error",
+									"USB: USB Not Recognized",
+									"USB: USB Drops/Intermittent",
+									"USB: USB Port Damaged",
+									"USB: Driver Missing",
+									"USB: Slow Data Transfer",
+									"ETH: LAN No Connection",
+									"ETH: IP Conflict",
+									"ETH: Cable Not Detected",
+									"ETH: Slow Network",
+									"ETH: Config Error",
+									"ETH: DHCP Failure",
+									"MBL: Smart Panel Issue",
+									"MBL: iPrint Issue",
+									"MBL: iProjection Issue",
+									"MBL: Air Print Issue",
+									"PROJ: No Display",
+									"PROJ: Blurry Projection",
+									"PROJ: Color Distortion",
+									"PROJ: Flickering Image",
+									"PROJ: Keystone Error",
+									"PROJ: Projector Not Detected",
+									"PROJ: Overheating",
+									"PROJ: Lamp Warning/Error",
+									"PROJ: No Audio Output",
+									"PROJ: HDMI Port Not Detected",
+									"PROJ: Lens Focus Issue",
+									"TECH: Firmware Update Failed",
+									"TECH: Driver Installation Error",
+									"TECH: App Connectivity Issue",
+									"TECH: Others (specify)",
+								]),
+                                Warranty: sortOptions([
+									"WRTY: Warranty Claim",
+									"WRTY: Validation Request",
+									"WRTY: Period Inquiry",
+									"WRTY: Terms Clarification",
+									"WRTY: Extended Warranty Purchase",
+									"WRTY: Extended Warranty Options",
+									"WRTY: Proof of Purchase Submission",
+									"WRTY: Registration Assistance",
+									"WRTY: Transfer Request",
+									"WRTY: MYEpson Portal Assistance",
+									"WRTY: Others (specify)",                             
+								]),
+                            };
+                            const selectedMainReason = this.value;
+                            if (subReasonMap[selectedMainReason]) {
+                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
+                            } else {
+                                resetSelect(contactReasonSub, "Select Main Reason first");
+                            }
+                        });
+                    } else {
+                        resetSelect(contactDirectionSelect, "Select Contact Direction");
+                        resetSelect(contactReasonMain, "Select Contact Reason");
+                        resetSelect(channelSelect, "Select Channel");
+                        resetSelect(contactReasonSub, "Select Main Reason first");
+                    }
+
+                    // Main Reason based on Direction 
+					if (value === "Voice" || "Non-Voice") {
+						setOptions(
+							contactReasonMain,
+							sortOptions([
+								"Complaint",
+								"Compliment",
+								"General",
+								"Line Issue",
+								"Language Support",
+								"Sales",
+								"Service",
+								"Technical",
+								"Warranty"
+							]),
+							"Select Contact Reason"
+						);
+					} else if (value === "EasyCare") {
+						setOptions(
+							contactReasonMain,
+							sortOptions([
+								"PMS",
+								"Service",
+								"Technical"
+							]),
+							"Select Contact Reason"
+						);
+					} else {
+						resetSelect(contactReasonMain, "Select Contact Reason");
+					}	
+
+				if (value === "Voice") {
+					setOptions(agentSelect, sortOptions(["Ains", "Batch", "Ben", "Chery", "Dennis", "Gail", "James", "John", "Kath", "Nico", "Philip", "Precy", "Princess", "Raine", "Rio", "Tristan", "Vina"]), "Select Agent");
+					setOptions(productCategorySelect, sortOptions(["Printers", "Printing Solutions", "Visual Products", "Scanners", "Others", "Unable to get the model"]), "Select Category");
+					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
+					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
+					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
+					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
+					
+                } else if (value === "Non-Voice") {
+					setOptions(agentSelect, sortOptions(["Ains", "Batch", "Ben", "Chery", "Dennis", "Gail", "James", "John", "Kath", "Nico", "Philip", "Precy", "Princess", "Raine", "Rio", "Tristan", "Vina"]), "Select Agent");
+					setOptions(productCategorySelect, sortOptions(["Printers", "Printing Solutions", "Visual Products", "Scanners", "Others", "Unable to get the model"]), "Select Category");
+					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
+					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
+					setOptions(hoopSelect, sortOptions(["Yes", "No", "Sunday", "Repeat Call"]), "Select Option");
+					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
+					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
+				
+				} else if (value === "EasyCare") {
+					setOptions(agentSelect, sortOptions(["Gail", "James", "John", "Philip"]), "Select Agent");
+					setOptions(productCategorySelect, sortOptions(["Printing Solutions"]), "Select Category");
+					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
+					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
+					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
+					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
+				
+				} else {
+						resetSelect(agentSelect, "Select Agent");
+						resetSelect(productCategorySelect, "Select Option");
+						resetSelect(captureSource, "Select Source");
+						resetSelect(isVRAUtilized, "Select Option");
+						resetSelect(isSurveySent, "Select Option");
+						resetSelect(customerType, "Select Option");
+						resetSelect(hoopSelect, "Select Option");
+				};
+                });
+				
+				function updateClosingDispo() {
+					const reasonMain = contactReasonMain.value;
+					const direction = directionSelect.value;
+					const contactDirection = contactDirectionSelect.value;
+					const nonVoiceChannels = ["Email", "FB: Messenger", "FB: Post", "Instagram", "Linked In", "Viber Demo", "WebChat", "X (Twitter)"];
+					const isNonVoiceChannel = nonVoiceChannels.includes(contactDirection);
+
+
+					// Helper: Sort options alphabetically
+					const sortOptions = (arr) => arr.slice().sort((a, b) => a.localeCompare(b));
+
+					// Voice Direction to Contact Direction to Main Reason to setting Closing Disposition
+						// For Complaints and Compliments
+					if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && (reasonMain === "Complaint" || reasonMain === "Compliment")) {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Call", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For General, Sales, Technical, Service, and Warranty Concerns
+					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Service" || reasonMain === "Warranty")) {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Call", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Line Issues
+					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && reasonMain === "Line Issue") {
+						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Language Support
+					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && reasonMain === "Language Support") {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+					// Non-Voice Direction to Contact Direction to Main Reason to Setting Closing Disposition
+						// For Complaints and Compliments
+					} else if (direction === "Non-Voice" && isNonVoiceChannel && (reasonMain === "Complaint" || reasonMain === "Compliment"))
+					{
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Email/Chat", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For General, Sales, Technical, Service, and Warranty Concerns
+					} else if (direction === "Non-Voice" && isNonVoiceChannel && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Service" || reasonMain === "Warranty")) {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Email/Chat", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Line Issues
+					} else if (direction === "Non-Voice" && isNonVoiceChannel && reasonMain === "Line Issue") {
+						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Language Support
+					} else if (direction === "Non-Voice" && isNonVoiceChannel && reasonMain === "Language Support") {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+					}
+					
+					// EasyCare Direction to Contact Direction to Main Reason to Setting Closing Disposition
+						// For Service Reasons
+					 else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Service") {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "For Dispatch-Cons", "For Dispatch-Parts", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Repeat Call/Email"]), "Select Disposition");	
+						
+						// For Complaints and Compliments
+					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && (reasonMain === "Complaint" || reasonMain === "Compliment"))
+					{
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Email/Chat", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For General, Sales, Technical and Warranty Concerns
+					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Warranty")) {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Email/Chat", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Line Issues
+					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Line Issue") {
+						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+						
+						// For Language Support
+					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Language Support") {
+						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+					}
+					
+					// Voice and Non-Voice Direction to Service Call to Setting Closing Disposition
+					 else if ((direction === "Voice" || direction === "Non-Voice") && (contactDirection === "Service Call")) {
+						contactReasonMain.value = "Technical";
+						setOptions(closingDispo, sortOptions(["For Dispatch", "For Carry-In"]), "Select Disposition");
+					}
+					// Voice and Non-Voice Direction to Transfer Call to Setting Closing Disposition
+					 else if ((direction === "Voice" || direction === "Non-Voice") && (contactDirection === "Transfer Call")) {
+						setOptions(closingDispo, sortOptions(["Escalate to L2/TL", "Line Disconnected", "Unresolved: EU will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
+					};
+				}
+				
+				contactDirectionSelect.addEventListener("change", () => {
+					updateClosingDispo();
+				});
+				
+				directionSelect.addEventListener("change", () => {
+					updateClosingDispo();
+				});
+				
+				contactReasonMain.addEventListener("change", () => {
+					updateClosingDispo();
+				});
+				
+                const productSubcategories = {
+                    "Printers": ["BIJ/CIJ", "CISS/MONO", "Labelworks", "POS", "SIDM", "Minilab", "Laser"],
+                    "Printing Solutions": ["BIJ/CIJ Pro", "RIPS/LIJ", "Colour Label", "Label Press", "LFP", "Photo/Proof"],
+                    "Visual Products": ["Business Projector", "Home Projector", "High Brightness"],
+                    "Scanners": ["Document", "Photo"],
+                    "Others": ["Others"],
+                    "Unable to get the model": ["Unable to get the model"],
+                };
+
+                const subcategoryToCustomerType = {
+					// MERI-B2C
+                    "Business Projector": "MERI-B2C",
+                    "CISS/MONO": "MERI-B2C",
+                    "BIJ/CIJ": "MERI-B2C",
+                    "Labelworks": "MERI-B2C",
+                    "SIDM": "MERI-B2C",
+
+					// MERI-B2B
+                    "Laser": "MERI-B2B",
+                    "Minilab": "MERI-B2B",
+                    "Photo/Proof": "MERI-B2B",
+                    "Document": "MERI-B2B",
+                    "Photo": "MERI-B2B",
+                    "POS": "MERI-B2B",
+					
+					// HARI-B2C
+                    "Home Projector": "HARI-B2C",
+					
+					// HARI-B2B
+                    "BIJ/CIJ Pro": "HARI-B2B",
+                    "RIPS/LIJ": "HARI-B2B", 
+                    "Colour Label": "HARI-B2B",
+                    "Label Press": "HARI-B2B",
+                    "LFP": "HARI-B2B",
+                    "High Brightness": "HARI-B2B",
+					
+					// OTHERS and UNABLE TO GET THE MODELS
+                    "Others": "N/A",
+                    "Unable to get the model": "N/A",
+                };
+
+                productCategorySelect.addEventListener("change", (event) => {
+                    const category = event.target.value;
+                    productSubcategorySelect.innerHTML = '<option value="">Select a category first</option>';
+					customerType.innerHTML = '<option value="">Select a sub-category first</option>';
+                    if (category && productSubcategories[category]) {
+                        productSubcategories[category].forEach((sub) => {
+                            const option = document.createElement("option");
+                            option.value = sub;
+                            option.textContent = sub;
+                            productSubcategorySelect.appendChild(option);
+                        });
+                    }
+                });
+
+                productSubcategorySelect.addEventListener("change", (event) => {
+                    const subcategory = event.target.value;
+					const mappedType = subcategoryToCustomerType[subcategory];
+
+					if (mappedType) {
+						// Clear and repopulate customerType with mapped value
+						customerType.innerHTML = `<option value="">Select a sub-category first</option><option value="${mappedType}">${mappedType}</option>`;
+						customerType.value = mappedType;
+					}
+                });
+				
+				document.getElementById("fldIsSurveySent").addEventListener("change", (event) => {
+					const surveyValue = event.target.value;
+					const surveyEmailField = document.getElementById("survey-email-field");
+
+					if (!surveyEmailField) return;
+
+					const shouldShow = surveyValue === "Yes via Email" || surveyValue === "Yes via Email and SMS";
+					surveyEmailField.classList.toggle("hidden-field", !shouldShow);
+				});
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    // --- Date-only field ---
+                    const dateInput = document.getElementById("fldDate");
+                    if (dateInput) {
+                        const today = new Date();
+                        const yyyy = today.getFullYear();
+                        const mm = String(today.getMonth() + 1).padStart(2, "0");
+                        const dd = String(today.getDate()).padStart(2, "0");
+                        if (!dateInput.value) {
+                            dateInput.value = `${yyyy}-${mm}-${dd}`;
+                        }
+                    }
+                });
+				
+				document.addEventListener("DOMContentLoaded", () => {
+					const selectFieldsToPrune = [
+						"agentName",
+						"contactDirection",
+						"channel",
+						"contactReasonMain",
+						"contactReasonSub",
+						"productCategory",
+						"productSubcategory",
+						"captureSource",
+						"closingDisposition",
+						"isVRAUtilized",
+						"isSurveySent",
+						"customerType"
+					];
+
+					selectFieldsToPrune.forEach((name) => {
+						const selectEl = document.getElementById(`fld${name.charAt(0).toUpperCase() + name.slice(1)}`);
+						if (selectEl) {
+							const defaultOption = selectEl.querySelector('option[value=""]');
+							if (defaultOption) {
+								selectEl.innerHTML = "";
+								selectEl.appendChild(defaultOption.cloneNode(true));
+								selectEl.value = "";
+								selectEl.dispatchEvent(new Event("change"));
+							}
+						}
+					});
+				});
+
+            })();
+			
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const allRecords = Storage.getAll(); // Assuming Storage.getAll() returns your stored array
+                updateProgressBar(allRecords.length, 1000); // 500 is your max quota
+            });
+        </script>
+        <script>
+            // Progress bar provision (requires HTML/CSS drop-in)
+            function updateProgressBar(current, max) {
+                const percent = Math.min((current / max) * 100, 100).toFixed(1);
+                const bar = document.getElementById("progressBar");
+
+                if (bar) {
+                    bar.style.width = percent + "%";
+                    bar.textContent = percent + "%";
+
+                    // Update color zone
+                    bar.classList.remove("low", "medium", "high");
+                    if (current < max * 0.5) {
+                        bar.classList.add("low");
+                    } else if (current < max * 0.9) {
+                        bar.classList.add("medium");
+                    } else {
+                        bar.classList.add("high");
+                    }
+                }
+            }
+
+            // Quota logic
+            const QUOTA_MIN = 250;
+            const QUOTA_MAX = 1000; // 500 is your original preferred max quota
+
+            function checkQuotaAndPromptExport() {
+                const all = Storage.getAll();
+                const count = all.length;
+
+                updateProgressBar(count, QUOTA_MAX);
+
+                if (count >= QUOTA_MAX) {
+                    Utils.alert("Storage limit reached. Auto-exporting data to CSV. Please collate manually via Excel.");
+                    Exporter.exportAll("auto_export.csv");
+                    Storage.clearAll();
+                    checkQuotaAndPromptExport();
+                } else if (count >= QUOTA_MIN) {
+                    Utils.alert(`You have stored ${count} entries. Consider exporting your data soon to avoid loss.`);
+                }
+            }
+
+            // Export stored data via CSV
+            const Exporter = (() => {
+                function toRow(entry) {
+                    const vals = CONFIG.csvHeaders.map((header) => entry[header]);
+                    return vals.map(Utils.escapeCSV).join(",");
+                }
+                function exportAll(filename = "raw_datacaps.csv") {
+                    const all = Storage.getAll();
+                    if (!all.length) {
+                        Utils.alert("No data to export!");
+                        return;
+                    }
+                    const rows = all.map(toRow);
+                    Utils.downloadCSV(filename, rows);
+                    Utils.alert(`Exported ${all.length} entr${all.length === 1 ? "y" : "ies"} to CSV.`);
+                }
+                return { exportAll };
+            })();
+
+            // Import data via CSV file
+            const Importer = (() => {
+                function attemptParse(text, delimiter, headers) {
+                    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+                    if (lines.length < 2) return [];
+                    const records = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        let values = lines[i].split(delimiter);
+                        if (values.length < headers.length) {
+                            console.warn(`Line ${i + 1} has fewer columns than expected. Missing fields will be filled with "N/A".`);
+                            while (values.length < headers.length) {
+                                values.push("N/A");
+                            }
+                        } else if (values.length > headers.length) {
+                            console.warn(`Line ${i + 1} has more columns than expected. Extra fields will be ignored.`);
+                            values = values.slice(0, headers.length);
+                        }
+                        const record = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            let finalValue = values[j].trim();
+                            finalValue = finalValue.replace(/^"|"$/g, "").replace(/""/g, '"');
+                            record[headers[j]] = finalValue;
+                        }
+                        records.push(record);
+                    }
+                    return records;
+                }
+                function parseCSV(csvText) {
+                    const cleanedText = csvText.startsWith("\ufeff") ? csvText.substring(1) : csvText;
+                    const headers = CONFIG.csvHeaders;
+                    let records = attemptParse(cleanedText, ",", headers);
+                    if (records.length === 0 && cleanedText.includes(";")) {
+                        records = attemptParse(cleanedText, ";", headers);
+                    }
+                    return records;
+                }
+                function importData() {
+                    const fileInput = document.getElementById("fileInput");
+                    const file = fileInput.files[0];
+                    if (!file) {
+                        Utils.alert("Please select a CSV file to import.");
+                        return;
+                    }
+
+                    const keyFields = ["transactionNumber", "customerEmail"]; // Customize as needed
+
+                    function isDuplicateByFields(newRecord) {
+                        const allRecords = Storage.getAll();
+                        return allRecords.some((existing) => {
+                            return keyFields.every((field) => {
+                                const newVal = (newRecord[field] || "").trim().toLowerCase();
+                                const existingVal = (existing[field] || "").trim().toLowerCase();
+                                return newVal && newVal === existingVal;
+                            });
+                        });
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const csvText = e.target.result;
+                            const entries = parseCSV(csvText);
+
+                            const uniqueEntries = [];
+                            const duplicates = [];
+
+                            entries.forEach((entry) => {
+                                if (isDuplicateByFields(entry)) {
+                                    duplicates.push(entry);
+                                } else {
+                                    uniqueEntries.push(entry);
+                                }
+                            });
+
+                            const totalParsed = uniqueEntries.length;
+
+                            if (totalParsed > 0) {
+                                Storage.appendAll(uniqueEntries);
+                                updateRecordCountDisplay();
+                                checkQuotaAndPromptExport();
+
+                                Utils.alert(`Imported ${totalParsed} entr${totalParsed === 1 ? "y" : "ies"}. ${duplicates.length} duplicate${duplicates.length === 1 ? "" : "s"} skipped.`);
+
+                                if (typeof View !== "undefined" && View.renderData) {
+                                    View.renderData();
+                                }
+
+                                if (duplicates.length > 0 && typeof injectDuplicatesIntoModal === "function") {
+                                    injectDuplicatesIntoModal(duplicates);
+                                    window.openDuplicatesModal?.();
+                                }
+                            } else if (duplicates.length > 0) {
+                                Utils.alert(`Import skipped: All ${duplicates.length} entr${duplicates.length === 1 ? "y" : "ies"} are duplicates.`);
+                                if (typeof injectDuplicatesIntoModal === "function") {
+                                    injectDuplicatesIntoModal(duplicates);
+                                    window.openDuplicatesModal?.();
+                                }
+                            } else {
+                                Utils.alert("Import Failed: The file is empty or does not match the expected data structure.", true);
+                            }
+
+                            fileInput.value = "";
+                        } catch (error) {
+                            console.error("Error processing CSV file:", error);
+                            Utils.alert("Fatal Error processing file. Check the browser console.", true);
+                        }
+                    };
+
+                    reader.readAsText(file);
+                }
+                return { importData };
+            })();
+
+            let idsGenerated = false;
+
+            function shouldImportDuplicates() {
+                const toggle = document.getElementById("importDuplicatesToggle");
+                const checked = toggle?.checked === true;
+                console.log("[shouldImportDuplicates] Checkbox checked:", checked);
+                return checked;
+            }
+
+            function regenerateAndLockIDs() {
+                console.log("[regenerateAndLockIDs] Attempting to regenerate IDs...");
+                const rows = document.querySelectorAll("#duplicatesDataTable tbody tr");
+                const idIndex = CONFIG.csvHeaders.indexOf("id");
+
+                if (idIndex < 0) {
+                    console.warn("[regenerateAndLockIDs] 'id' column not found in headers.");
+                    return;
+                }
+
+                rows.forEach((row, rowIndex) => {
+                    const cells = row.querySelectorAll("td");
+                    const idCell = cells[idIndex];
+
+                    if (!idCell) {
+                        console.warn(`[regenerateAndLockIDs] Row ${rowIndex} missing id cell.`);
+                        return;
+                    }
+
+                    const newId = "ID-" + crypto.randomUUID();
+                    idCell.innerHTML = `<span class="id-badge" title="System-generated ID">${newId}</span>`;
+                    idCell.setAttribute("contenteditable", "false");
+                    idCell.classList.add("readonly-cell");
+                    console.log(`[regenerateAndLockIDs] Row ${rowIndex} id set to:`, newId);
+                });
+            }
+
+            function injectDuplicatesIntoModal(duplicates) {
+                console.log("[injectDuplicatesIntoModal] Injecting", duplicates.length, "rows.");
+                const tbody = document.querySelector("#duplicatesDataTable tbody");
+                const summary = document.getElementById("duplicatesSummary");
+                const headers = CONFIG.csvHeaders;
+
+                tbody.innerHTML = "";
+                duplicates.forEach((record, index) => {
+                    const tr = document.createElement("tr");
+                    tr.setAttribute("data-index", index);
+                    headers.forEach((header) => {
+                        const td = document.createElement("td");
+                        td.setAttribute("data-field", header);
+
+                        if (header === "id") {
+                            td.innerHTML = `<span class="id-badge" title="System-generated ID">${record[header] || "N/A"}</span>`;
+                            td.setAttribute("contenteditable", "false");
+                            td.classList.add("readonly-cell");
+                        } else {
+                            td.textContent = record[header] || "N/A";
+                            td.setAttribute("contenteditable", "true");
+                        }
+
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+
+                idsGenerated = false;
+                if (shouldImportDuplicates()) {
+                    console.log("[injectDuplicatesIntoModal] Checkbox already ticked, regenerating IDs.");
+                    regenerateAndLockIDs();
+                    idsGenerated = true;
+                }
+
+                summary.textContent = `Found ${duplicates.length} duplicate entr${duplicates.length === 1 ? "y" : "ies"} during import.`;
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const toggle = document.getElementById("importDuplicatesToggle");
+                const confirmBtn = document.getElementById("confirmImportDuplicatesBtn");
+
+                function updateConfirmState() {
+                    console.log("[updateConfirmState] Checkbox changed. Checked:", toggle.checked);
+                    confirmBtn.disabled = !toggle.checked;
+
+                    const hasRows = document.querySelectorAll("#duplicatesDataTable tbody tr").length > 0;
+                    console.log("[updateConfirmState] Table has rows:", hasRows);
+
+                    if (toggle.checked && !idsGenerated && hasRows) {
+                        console.log("[updateConfirmState] Regenerating IDs after checkbox tick.");
+                        regenerateAndLockIDs();
+                        idsGenerated = true;
+                    }
+                }
+
+                toggle.addEventListener("change", updateConfirmState);
+                updateConfirmState(); // Initial state
+            });
+
+            document.getElementById("confirmImportDuplicatesBtn").addEventListener("click", () => {
+                console.log("[confirmImportDuplicatesBtn] Confirm button clicked.");
+                if (!shouldImportDuplicates()) {
+                    console.log("[confirmImportDuplicatesBtn] Import cancelled due to unchecked box.");
+                    Utils.alert("Import cancelled: You chose not to import duplicate entries.");
+                    closeDuplicatesModal();
+                    return;
+                }
+
+                const tbody = document.querySelector("#duplicatesDataTable tbody");
+                const rows = Array.from(tbody.querySelectorAll("tr"));
+                const headers = CONFIG.csvHeaders;
+
+                const duplicates = rows.map((row, rowIndex) => {
+                    const cells = row.querySelectorAll("td");
+                    const record = {};
+
+                    headers.forEach((header, i) => {
+                        const cell = cells[i];
+                        let value = "N/A";
+
+                        if (header === "id") {
+                            const badge = cell.querySelector(".id-badge");
+                            value = badge?.textContent?.trim() || "N/A";
+                        } else {
+                            value = cell?.textContent?.trim() || "N/A";
+                        }
+
+                        record[header] = value;
+                    });
+
+                    console.log(`[confirmImportDuplicatesBtn] Row ${rowIndex} record:`, record);
+                    return record;
+                });
+
+                Storage.appendAll(duplicates);
+                updateRecordCountDisplay();
+                checkQuotaAndPromptExport();
+
+                if (typeof View !== "undefined" && View.renderData) {
+                    View.renderData();
+                }
+
+                Utils.alert(`Successfully imported ${duplicates.length} duplicate entr${duplicates.length === 1 ? "y" : "ies"}.`);
+                closeDuplicatesModal();
+            });
+
+            document.getElementById("cancelImportDuplicatesBtn").addEventListener("click", () => {
+                Utils.alert("Import cancelled: You chose not to import duplicate entries.");
+                closeDuplicatesModal();
+            });
+
+            function closeDuplicatesModal() {
+                const modal = document.getElementById("duplicatesModal");
+                const toggle = document.getElementById("importDuplicatesToggle");
+
+                modal.style.display = "none";
+                modal.setAttribute("aria-hidden", "true");
+                document.body.style.overflow = "";
+
+                // Reset checkbox and ID generation flag
+                if (toggle) {
+                    toggle.checked = false;
+                    console.log("[closeDuplicatesModal] Checkbox reset to unchecked.");
+                }
+                idsGenerated = false;
+                console.log("[closeDuplicatesModal] idsGenerated flag reset.");
+            }
+        </script>
+        <script>
+            function updateDateTime() {
+                const now = new Date();
+                const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: !0 };
+                const formatted = now.toLocaleString(undefined, options);
+                document.getElementById("dateTimeDisplay").textContent = formatted;
+            }
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        </script>
+		<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const btn = document.getElementById("btnBreakers");
+
+			btn.addEventListener("click", function () {
+				const existing = document.getElementById("breakOverlay");
+				if (existing) existing.remove();
+
+				const overlay = document.createElement("div");
+				overlay.id = "breakOverlay";
+				overlay.style.position = "fixed";
+				overlay.style.top = "0";
+				overlay.style.left = "0";
+				overlay.style.width = "100%";
+				overlay.style.height = "100%";
+				overlay.style.background = "rgba(0,0,0,0.6)";
+				overlay.style.display = "flex";
+				overlay.style.flexDirection = "column";
+				overlay.style.justifyContent = "center";
+				overlay.style.alignItems = "center";
+				overlay.style.zIndex = "9999";
+
+				const box = document.createElement("div");
+				box.style.background = "var(--color-accent)";
+				box.style.padding = "15px";
+				box.style.borderRadius = "10px";
+				box.style.boxShadow = "0 0 10px rgba(0,0,0,0.5)";
+				box.style.textAlign = "center";
+
+				const closeBtn = document.createElement("button");
+				closeBtn.textContent = "✖ Close";
+				closeBtn.style.position = "absolute";
+				closeBtn.style.top = "20px";
+				closeBtn.style.right = "20px";
+				closeBtn.style.padding = "10px 15px";
+				closeBtn.style.border = "none";
+				closeBtn.style.borderRadius = "8px";
+				closeBtn.style.background = "#ff4d4d";
+				closeBtn.style.color = "#fff";
+				closeBtn.style.cursor = "pointer";
+				closeBtn.style.fontSize = "1rem";
+				closeBtn.onclick = () => overlay.remove();
+				overlay.appendChild(closeBtn);
+
+				const durations = [5, 15, 30, 60];
+				durations.forEach((mins) => {
+					const b = document.createElement("button");
+					b.textContent = `${mins} mins break`;
+					b.style.margin = "10px";
+					b.style.padding = "10px 20px";
+					b.style.border = "none";
+					b.style.borderRadius = "8px";
+					b.style.background = "var(--color-surface)";
+					b.style.color = "var(--color-accent)";
+					b.style.cursor = "pointer";
+					b.style.userSelect = "none";
+					b.style.fontSize = "1.5rem";
+					b.style.fontWeight = "700";
+					b.onclick = () => startTimer(mins * 60, overlay);
+					box.appendChild(b);
+				});
+
+				overlay.appendChild(box);
+				document.body.appendChild(overlay);
+			});
+
+			function playTimerBeep() {
+				try {
+					const audio = new Audio("file://hgs-ph.com/shared%20folders/Epson/Agents/Agents%20Resources/TS%20Engine/assets-new/tones/iphone-ndrrmc.mp3");
+					audio.play().catch(err => {
+						console.warn("MP3 playback failed, falling back to oscillator beep.", err);
+
+						if (!window.AppState) window.AppState = {};
+						if (!AppState.audioCtx || AppState.audioCtx.state === "closed") {
+							AppState.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+						}
+
+						const duration = 5.0;
+						const oscillator = AppState.audioCtx.createOscillator();
+						const gainNode = AppState.audioCtx.createGain();
+
+						oscillator.type = "sine";
+						oscillator.frequency.setValueAtTime(880, AppState.audioCtx.currentTime);
+
+						oscillator.connect(gainNode);
+						gainNode.connect(AppState.audioCtx.destination);
+
+						gainNode.gain.setValueAtTime(1, AppState.audioCtx.currentTime);
+						gainNode.gain.exponentialRampToValueAtTime(0.01, AppState.audioCtx.currentTime + duration);
+
+						oscillator.start();
+						oscillator.stop(AppState.audioCtx.currentTime + duration);
+					});
+				} catch (err) {
+					console.warn("Audio playback failed entirely.", err);
+				}
+			}
+
+			function startTimer(seconds, overlay) {
+				overlay.innerHTML = "";
+
+				const timerBox = document.createElement("div");
+				timerBox.style.background = "var(--color-surface)";
+				timerBox.style.padding = "30px";
+				timerBox.style.borderRadius = "8px";
+				timerBox.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
+				timerBox.style.fontSize = "2rem";
+				timerBox.style.fontWeight = "700";
+				timerBox.style.color = "var(--color-accent)";
+				timerBox.style.userSelect = "none";
+
+				const controls = document.createElement("div");
+				controls.style.marginTop = "20px";
+				controls.style.display = "flex";
+				controls.style.gap = "10px";
+				controls.style.justifyContent = "center";
+
+				const pauseBtn = document.createElement("button");
+				pauseBtn.textContent = "Pause";
+				pauseBtn.style.padding = "10px 20px";
+				pauseBtn.style.border = "none";
+				pauseBtn.style.borderRadius = "8px";
+				pauseBtn.style.background = "#f0ad4e";
+				pauseBtn.style.color = "#fff";
+				pauseBtn.style.cursor = "pointer";
+				pauseBtn.style.fontSize = "1rem";
+
+				const closeBtn = document.createElement("button");
+				closeBtn.textContent = "Close";
+				closeBtn.style.padding = "10px 20px";
+				closeBtn.style.border = "none";
+				closeBtn.style.borderRadius = "8px";
+				closeBtn.style.background = "#d9534f";
+				closeBtn.style.color = "#fff";
+				closeBtn.style.cursor = "pointer";
+				closeBtn.style.fontSize = "1rem";
+				closeBtn.onclick = () => overlay.remove();
+
+				controls.appendChild(pauseBtn);
+				controls.appendChild(closeBtn);
+
+				let isPaused = false;
+				let interval;
+				let warningPlayed = false;
+
+				const updateDisplay = () => {
+					const mins = Math.floor(seconds / 60);
+					const secs = seconds % 60;
+					timerBox.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+				};
+
+				const startInterval = () => {
+					interval = setInterval(() => {
+						if (!isPaused) {
+							seconds--;
+							updateDisplay();
+
+							if (!warningPlayed && seconds === 120) {
+								playTimerBeep(); // 2-minute warning
+								warningPlayed = true;
+							}
+
+							if (seconds <= 0) {
+								clearInterval(interval);
+								timerBox.textContent = "Break is Over!";
+								playTimerBeep(); // Final beep
+								setTimeout(() => overlay.remove(), 2000);
+							}
+						}
+					}, 1000);
+				};
+
+				pauseBtn.onclick = () => {
+					isPaused = !isPaused;
+					pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+				};
+
+				updateDisplay();
+				overlay.appendChild(timerBox);
+				overlay.appendChild(controls);
+				startInterval();
+			}
+		});
+		</script>
+        <script>
+            (function () {
+                // Create warning overlay
+                const warning = document.createElement("div");
+                warning.id = "devToolsWarning";
+                Object.assign(warning.style, {
+                    position: "fixed",
+                    top: "0",
+                    left: "0",
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0.85)",
+                    color: "#fff",
+                    fontSize: "1.25rem",
+                    display: "none",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: "9999",
+                    textAlign: "center",
+                    padding: "2rem",
+                    flexDirection: "column",
+                });
+
+                const message = document.createElement("div");
+                message.innerHTML = `<strong>Warning:</strong> Accessing developer tools via browser settings or shortcuts are restricted on this page.<br>Please close any inspection tools or sidebar tools to continue using the app.`;
+                message.style.marginBottom = "1rem";
+                message.style.userSelect = "none";
+
+                const dismissBtn = document.createElement("button");
+                dismissBtn.textContent = "Dismiss";
+                Object.assign(dismissBtn.style, {
+                    padding: "0.5rem 1rem",
+                    fontSize: "1rem",
+                    backgroundColor: "#f44336",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                });
+                dismissBtn.onclick = () => hideDevToolsWarning();
+
+                warning.appendChild(message);
+                warning.appendChild(dismissBtn);
+                document.body.appendChild(warning);
+
+                let timeoutId = null;
+
+                function showDevToolsWarning() {
+                    warning.style.display = "flex";
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        hideDevToolsWarning();
+                    }, 10000); // Auto-hide after 8 seconds
+                }
+
+                function hideDevToolsWarning() {
+                    warning.style.display = "none";
+                    clearTimeout(timeoutId);
+                }
+
+                // Disable right-click
+                document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+                // Disable common shortcuts
+                document.addEventListener("keydown", (e) => {
+                    const key = e.key.toUpperCase();
+                    if (key === "F12" || (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(key)) || (e.ctrlKey && ["U", "S", "P"].includes(key))) {
+                        e.preventDefault();
+                        showDevToolsWarning();
+                    }
+                });
+            })();
+        </script>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+			  // Disable buttons on initial load
+			  document.getElementById('btnViewRecords').disabled = true;
+			  document.getElementById('btnClear').disabled = true;
+			  document.getElementById('btnExport').disabled = true;
+			  document.getElementById('btnImport').disabled = true;
+			});
+
+			(function () {
+			  const toggleBtn = document.getElementById('openModalFormBtn');
+			  const modal = document.getElementById('modalFormWrapper');
+			  const form = document.getElementById('dataForm');
+			  const main = document.getElementById('main');
+			  const guide = document.getElementById('guideContent');
+			  const icon = toggleBtn.querySelector('i');
+
+			  const btnViewRecords = document.getElementById('btnViewRecords');
+			  const btnClear = document.getElementById('btnClear');
+			  const btnExport = document.getElementById('btnExport');
+			  const btnImport = document.getElementById('btnImport');
+
+			  toggleBtn.addEventListener('click', () => {
+				const isHidden = modal.classList.contains('hidden');
+
+				if (isHidden) {
+				  modal.classList.remove('hidden');
+				  form.style.display = 'grid';
+				  main.style.display = 'block';
+				  guide.style.display = 'none';
+
+				  icon.title = 'Close Form';
+				  toggleBtn.setAttribute('aria-label', 'Close Form');
+
+				  btnViewRecords.disabled = false;
+				  btnClear.disabled = false;
+				  btnExport.disabled = false;
+				  btnImport.disabled = false;
+				} else {
+				  modal.classList.add('hidden');
+				  form.style.display = 'none';
+				  main.style.display = 'none';
+				  guide.style.display = 'block';
+
+				  icon.title = 'Open Form';
+				  toggleBtn.setAttribute('aria-label', 'Open Form');
+
+				  btnViewRecords.disabled = true;
+				  btnClear.disabled = true;
+				  btnExport.disabled = true;
+				  btnImport.disabled = true;
+				}
+			  });
+			})();
+		</script>
+    </body>
+</html>
