@@ -2180,1262 +2180,1251 @@
                 }
             }
 
-            (function init() {
-                Theme.init();
-                Typography.init();
-                A11y.bindShortcuts();
-                DataTable.render();
-                const dataForm = document.getElementById("dataForm");
-                const btnSave = document.getElementById("btnSave");
-                const btnSaveAsNew = document.getElementById("btnSaveAsNew");
-                const btnExport = document.getElementById("btnExport");
-                const btnClear = document.getElementById("btnClear");
-                const btnReset = document.getElementById("btnReset");
-				
-				const directionSelect = document.getElementById("fldDirection");
-				const agentSelect = document.getElementById("fldAgentName");
-				const contactDirectionSelect = document.getElementById("fldContactDirection");
-				const channelSelect = document.getElementById("fldChannel");
-				const contactReasonMain = document.getElementById("fldContactReasonMain");
-				const contactReasonSub = document.getElementById("fldContactReasonSub");
-				const productCategorySelect = document.getElementById("fldProductCategory");
-				const productSubcategorySelect = document.getElementById("fldProductSubcategory");
-				const captureSource = document.getElementById("fldCaptureSource");
-				const closingDispo = document.getElementById("fldClosingDisposition");
-				const isVRAUtilized = document.getElementById("fldIsVRAUtilized");
-				const hoopSelect = document.getElementById("fldHoop");
-				const isSurveySent = document.getElementById("fldIsSurveySent");
-				const customerType = document.getElementById("fldCustomerType");
-				
-                const nonVoiceFields = [
-                    document.getElementById("non-voice-hoop-field"),
-                    document.getElementById("non-voice-received-field"),
-                    document.getElementById("non-voice-started-field"),
-                    document.getElementById("non-voice-responded-field"),
-                ];
-                const btnSearch = document.getElementById("btnSearch");
-                const searchInput = document.getElementById("searchInput");
-                const btnEdit = document.getElementById("btnEdit");
-                const btnDelete = document.getElementById("btnDelete");
-                const fileInput = document.getElementById("fileInput");
-                const btnImport = document.getElementById("btnImport");
+			// Shared helpers (centralize and reuse across listeners)
+			function sortOptions(arr) {
+			  return arr.slice().sort((a, b) => a.localeCompare(b));
+			}
+			function setOptions(selectElement, options, placeholderText = "Select an option") {
+			  // Preserve default placeholder if exists, else set new
+			  const defaultPlaceholder = selectElement.querySelector('option[value=""]');
+			  selectElement.innerHTML = "";
+			  const placeholder = document.createElement("option");
+			  placeholder.value = "";
+			  placeholder.textContent = placeholderText;
+			  selectElement.appendChild(placeholder);
+			  options.forEach((opt) => {
+				const option = document.createElement("option");
+				option.value = opt;
+				option.textContent = opt;
+				selectElement.appendChild(option);
+			  });
+			  selectElement.value = "";
+			  // Ensure dependent chains recalc without stacking listeners
+			  selectElement.dispatchEvent(new Event("change"));
+			}
+			function resetSelect(selectElement, placeholderText = "Select Option") {
+			  selectElement.innerHTML = `<option value="">${placeholderText}</option>`;
+			  selectElement.value = "";
+			  selectElement.dispatchEvent(new Event("change"));
+			}
 
-                btnSave.addEventListener("click", () => {
-                    const formElement = document.getElementById("dataForm");
+			// Closing Disposition updater extracted and made pure
+			function updateClosingDispo({
+			  closingDispo,
+			  directionSelect,
+			  contactDirectionSelect,
+			  contactReasonMain,
+			}) {
+			  const reasonMain = contactReasonMain.value;
+			  const direction = directionSelect.value;
+			  const contactDirection = contactDirectionSelect.value;
+			  const nonVoiceChannels = [
+				"Email",
+				"FB: Messenger",
+				"FB: Post",
+				"Instagram",
+				"Linked In",
+				"Viber Demo",
+				"Webchat",
+				"X (Twitter)",
+			  ];
+			  const isNonVoiceChannel = nonVoiceChannels.includes(contactDirection);
 
-                    if (formElement && formElement.hasAttribute("data-editing-id")) {
-                        Utils.alert("Form is in 'Edit Mode'. To save this as a new record, click 'Save As New'.");
-                        return;
-                    }
+			  // VOICE: Inbound/Outbound
+			  if (
+				direction === "Voice" &&
+				(contactDirection === "Inbound" || contactDirection === "Outbound") &&
+				(reasonMain === "Complaint" || reasonMain === "Compliment")
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Escalated to L2/TL",
+					"Line Disconnected",
+					"Repeat Call",
+					"Resolved by L2/TL",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Voice" &&
+				(contactDirection === "Inbound" || contactDirection === "Outbound") &&
+				["General", "Sales", "Technical", "Service", "Warranty"].includes(reasonMain)
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Line Disconnected",
+					"Repeat Call",
+					"Resolved By L1",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Voice" &&
+				(contactDirection === "Inbound" || contactDirection === "Outbound") &&
+				reasonMain === "Line Issue"
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Line Disconnected",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Voice" &&
+				(contactDirection === "Inbound" || contactDirection === "Outbound") &&
+				reasonMain === "Language Support"
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Line Disconnected",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  }
 
-                    const entry = Form.buildEntry();
-                    delete entry.id;
+			  // NON-VOICE: channels
+			  else if (
+				direction === "Non-Voice" &&
+				isNonVoiceChannel &&
+				(reasonMain === "Complaint" || reasonMain === "Compliment")
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Escalated to L2/TL",
+					"Line Disconnected",
+					"Repeat Email/Chat",
+					"Resolved by L2/TL",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Non-Voice" &&
+				isNonVoiceChannel &&
+				["General", "Sales", "Technical", "Service", "Warranty"].includes(reasonMain)
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Line Disconnected",
+					"Repeat Email/Chat",
+					"Resolved By L1",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Non-Voice" &&
+				isNonVoiceChannel &&
+				reasonMain === "Line Issue"
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Line Disconnected",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else if (
+				direction === "Non-Voice" &&
+				isNonVoiceChannel &&
+				reasonMain === "Language Support"
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"Line Disconnected",
+					"Unresolved: EU Will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  }
 
-                    const ok = Storage.append(entry);
-                    if (ok) {
-                        updateRecordCountDisplay();
-                        DataTable.render();
-                        checkQuotaAndPromptExport();
-                        dataForm.reset();
-                    } else {
-                        Utils.alert("Failed to save data.");
-                    }
-                });
+			  // EASYCARE
+			  else if (
+				direction === "EasyCare" &&
+				["Inbound", "Non-Voice", "Outbound"].includes(contactDirection) &&
+				(reasonMain === "PMS" || reasonMain === "Service" || reasonMain === "Technical")
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalated to Client",
+					"For Dispatch-Cons",
+					"For Dispatch-Parts",
+					"Line Disconnected",
+					"Unresolved: EU Will Call/Email Back",
+					"Repeat Call/Email",
+					"Resolved by L1"
+				  ]),
+				  "Select Disposition"
+				);
+			  }
 
-                btnSaveAsNew.addEventListener("click", () => {
-                    const formElement = document.getElementById("dataForm");
+			  // Cross-cutting: Service Call overrides
+			  else if (
+				(direction === "Voice" || direction === "Non-Voice") &&
+				contactDirection === "Service Call"
+			  ) {
+				setOptions(closingDispo, sortOptions(["For Dispatch", "For Carry-In"]), "Select Disposition");
+			  }
 
-                    // Clear editing mode to prevent accidental deletion or overwrite
-                    if (formElement && formElement.hasAttribute("data-editing-id")) {
-                        formElement.removeAttribute("data-editing-id");
-                    }
+			  // Cross-cutting: Transfer Call options
+			  else if (
+				(direction === "Voice" || direction === "Non-Voice") &&
+				contactDirection === "Transfer Call"
+			  ) {
+				setOptions(
+				  closingDispo,
+				  sortOptions([
+					"Escalate to L2/TL",
+					"Line Disconnected",
+					"Unresolved: EU will Call/Email Back",
+					"Unresolved: Need to do Outbound",
+				  ]),
+				  "Select Disposition"
+				);
+			  } else {
+				resetSelect(closingDispo, "Select Disposition");
+			  }
+			}
 
-                    const entry = Form.buildEntry();
-                    delete entry.id;
+			(function init() {
+			  // 1) Boot
+			  Theme.init();
+			  Typography.init();
+			  A11y.bindShortcuts();
+			  DataTable.render();
 
-                    const ok = Storage.append(entry);
-                    if (ok) {
-                        updateRecordCountDisplay();
-                        DataTable.render();
-                        checkQuotaAndPromptExport();
-                        Utils.alert("Saved as a new record. Original entry remains unchanged.");
-                    } else {
-                        Utils.alert("Failed to save data.");
-                    }
-                });
+			  // 2) Cache DOM
+			  const dataForm = document.getElementById("dataForm");
+			  const btnSave = document.getElementById("btnSave");
+			  const btnSaveAsNew = document.getElementById("btnSaveAsNew");
+			  const btnExport = document.getElementById("btnExport");
+			  const btnClear = document.getElementById("btnClear");
+			  const btnReset = document.getElementById("btnReset");
+			  const btnSearch = document.getElementById("btnSearch");
+			  const searchInput = document.getElementById("searchInput");
+			  const btnEdit = document.getElementById("btnEdit");
+			  const btnDelete = document.getElementById("btnDelete");
+			  const fileInput = document.getElementById("fileInput");
+			  const btnImport = document.getElementById("btnImport");
 
-                btnExport.addEventListener("click", () => {
-                    Exporter.exportAll("raw_datacaps.csv");
-                });
+			  const directionSelect = document.getElementById("fldDirection");
+			  const agentSelect = document.getElementById("fldAgentName");
+			  const contactDirectionSelect = document.getElementById("fldContactDirection");
+			  const channelSelect = document.getElementById("fldChannel");
+			  const contactReasonMain = document.getElementById("fldContactReasonMain");
+			  const contactReasonSub = document.getElementById("fldContactReasonSub");
+			  const productCategorySelect = document.getElementById("fldProductCategory");
+			  const productSubcategorySelect = document.getElementById("fldProductSubcategory");
+			  const captureSource = document.getElementById("fldCaptureSource");
+			  const closingDispo = document.getElementById("fldClosingDisposition");
+			  const isVRAUtilized = document.getElementById("fldIsVRAUtilized");
+			  const hoopSelect = document.getElementById("fldHoop");
+			  const isSurveySent = document.getElementById("fldIsSurveySent");
+			  const customerType = document.getElementById("fldCustomerType");
 
-                btnClear.addEventListener("click", async () => {
-                    const confirmed = await Utils.confirm("Are you sure you want to clear all stored data? This cannot be undone.");
-                    if (confirmed) {
-                        const ok = Storage.clearAll();
-                        Utils.alert(ok ? "All stored data cleared." : "Failed to clear data.");
-                        if (ok) {
-                            updateRecordCountDisplay();
-                            DataTable.render();
-                            searchInput.value = "";
-                            checkQuotaAndPromptExport();
-                            dataForm.removeAttribute("data-editing-id");
-                        }
-                    }
-                });
+			  const nonVoiceFields = [
+				document.getElementById("non-voice-hoop-field"),
+				document.getElementById("non-voice-received-field"),
+				document.getElementById("non-voice-started-field"),
+				document.getElementById("non-voice-responded-field"),
+			  ];
 
-                btnReset.addEventListener("click", Form.resetForm);
+			  // 3) Top-bar controls
+			  document.getElementById("btnTheme").addEventListener("click", () => Theme.cycle());
+			  document.getElementById("btnFontUp").addEventListener("click", () => Typography.inc());
+			  document.getElementById("btnFontReset").addEventListener("click", () => Typography.reset());
+			  document.getElementById("btnFontDown").addEventListener("click", () => Typography.dec());
 
-                btnSearch.addEventListener("click", () => {
-                    const searchTerm = searchInput.value.trim();
-                    dataForm.removeAttribute("data-editing-id");
-                    if (!searchTerm) {
-                        Utils.alert("Please enter a term (ID, Transaction, or Phone) to search.");
-                        return;
-                    }
-                    const filteredEntries = DataTable.search(searchTerm);
-                    if (filteredEntries && filteredEntries.length === 1) {
-                        const entry = filteredEntries[0];
-                        Form.populate(entry);
-                        Utils.alert(`Found unique record ID ${entry.id.substring(3, 10)}... and loaded for editing. Click EDIT to update.`);
-                    } else if (filteredEntries && filteredEntries.length > 1) {
-                        Utils.alert(`Found ${filteredEntries.length} records. Please use the table to confirm the entry, then click EDIT/Update.`);
-                    } else {
-                        Utils.alert("No records found matching your search term.");
-                    }
-                });
+			  // 4) Table modal wiring (single-time)
+			  (function wireRecordsModal() {
+				const modal = document.getElementById("recordsModal");
+				const openButton = document.getElementById("btnViewRecords");
+				const closeButton = modal.querySelector(".close-button");
+				const modalContent = modal.querySelector(".modal-content");
 
-                btnEdit.addEventListener("click", () => {
-                    const formElement = document.getElementById("dataForm");
-                    const existingId = formElement ? formElement.dataset.editingId : null;
-                    if (!existingId) {
-                        Utils.alert("No record loaded for editing. Please use Search first.");
-                        return;
-                    }
-                    if (Form.validateVisibleFields()) {
-                        const updatedEntry = Form.buildEntry();
-                        if (!updatedEntry.id) {
-                            Utils.alert("Update failed: Record ID is missing.");
-                            return;
-                        }
-                        const ok = Storage.update(updatedEntry);
-                        if (ok) {
-                            updateRecordCountDisplay();
-                            DataTable.render();
-                            Form.resetForm();
-                            Utils.alert(`Entry ID ${updatedEntry.id.substring(3, 10)}... UPDATED successfully! Form reset.`);
-                        } else {
-                            Utils.alert("Failed to update data.");
-                        }
-                    }
-                });
-
-                btnDelete.addEventListener("click", async () => {
-                    const formElement = document.getElementById("dataForm");
-                    const existingId = formElement ? formElement.dataset.editingId : null;
-                    if (!existingId) {
-                        Utils.alert("No record loaded for deletion. Please use the Search button first.");
-                        return;
-                    }
-                    const confirmed = await Utils.confirm(`Are you sure you want to permanently delete the entry ID ${existingId.substring(3, 10)}...?`);
-                    if (confirmed) {
-                        const ok = Storage.remove(existingId);
-                        if (ok) {
-                            updateRecordCountDisplay();
-                            Utils.alert("Entry deleted successfully! Table updated.");
-                            searchInput.value = "";
-                            Form.resetForm();
-                            DataTable.render();
-                        } else {
-                            Utils.alert("Failed to delete entry. It may no longer exist.");
-                        }
-                    }
-                });
-
-                btnImport.addEventListener("click", () => {
-                    fileInput.click();
-                });
-
-                fileInput.addEventListener("change", () => {
-                    Importer.importData();
-                });
-
-                // View Records/Table Modal
-                document.addEventListener("DOMContentLoaded", () => {
-                    const modal = document.getElementById("recordsModal");
-                    const openButton = document.getElementById("btnViewRecords");
-                    const closeButton = modal.querySelector(".close-button");
-                    const modalContent = modal.querySelector(".modal-content");
-                    const main = document.getElementById("main");
-                    function openModal() {
-                        DataTable.render();
-                        modal.style.display = "flex";
-                        modal.setAttribute("aria-hidden", "false");
-                        document.body.style.overflow = "hidden";
-                        closeButton.focus();
-                    }
-                    function closeModal() {
-                        modal.style.display = "none";
-                        modal.setAttribute("aria-hidden", "true");
-                        document.body.style.overflow = "";
-                        openButton.focus();
-                    }
-                    openButton.addEventListener("click", openModal);
-                    closeButton.addEventListener("click", closeModal);
-                    document.addEventListener("click", (e) => {
-                        const isModalOpen = modal.style.display === "flex";
-                        if (!isModalOpen) return;
-                        const clickedOutsideModal = !modalContent.contains(e.target);
-                        const clickedOnBackdrop = modal.contains(e.target);
-                        if (clickedOutsideModal && clickedOnBackdrop) {
-                            closeModal();
-                        }
-                    });
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === "Escape" && modal.style.display === "flex") {
-                            closeModal();
-                        }
-                    });
-                });
-
-                // Import Preview / Duplicates Modal
-                document.addEventListener("DOMContentLoaded", () => {
-                    const modal = document.getElementById("duplicatesModal");
-                    const closeButton = modal.querySelector(".close-button");
-                    const modalContent = modal.querySelector(".modal-content");
-
-                    function openModal() {
-                        modal.style.display = "flex";
-                        modal.setAttribute("aria-hidden", "false");
-                        document.body.style.overflow = "hidden";
-                        closeButton.focus();
-                    }
-
-                    function closeModal() {
-                        modal.style.display = "none";
-                        modal.setAttribute("aria-hidden", "true");
-                        document.body.style.overflow = "";
-                    }
-
-                    // Attach to global scope for programmatic use
-                    window.openDuplicatesModal = function () {
-                        const modal = document.getElementById("duplicatesModal");
-                        const closeButton = modal.querySelector(".close-button");
-                        const tableInner = document.getElementById("duplicatesTableInner");
-                        const firstRow = document.querySelector("#duplicatesDataTable tbody tr");
-
-                        modal.style.display = "flex";
-                        modal.setAttribute("aria-hidden", "false");
-                        document.body.style.overflow = "hidden";
-                        closeButton.focus();
-
-                        if (firstRow && tableInner) {
-                            firstRow.scrollIntoView({ behavior: "smooth", block: "start" });
-                            firstRow.classList.add("highlight-row");
-                        }
-                    };
-
-                    // Optional manual trigger (if you keep a button)
-                    const openButton = document.getElementById("btnViewDuplicates");
-                    if (openButton) {
-                        openButton.addEventListener("click", openModal);
-                    }
-
-                    closeButton.addEventListener("click", closeModal);
-
-                    document.addEventListener("click", (e) => {
-                        const isModalOpen = modal.style.display === "flex";
-                        if (!isModalOpen) return;
-                        const clickedOutsideModal = !modalContent.contains(e.target);
-                        const clickedOnBackdrop = modal.contains(e.target);
-                        if (clickedOutsideModal && clickedOnBackdrop) {
-                            closeModal();
-                        }
-                    });
-
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === "Escape" && modal.style.display === "flex") {
-                            closeModal();
-                        }
-                    });
-                });
-
-                document.addEventListener("DOMContentLoaded", updateRecordCountDisplay);
-                document.getElementById("btnTheme").addEventListener("click", () => Theme.cycle());
-                document.getElementById("btnFontUp").addEventListener("click", () => Typography.inc());
-                document.getElementById("btnFontReset").addEventListener("click", () => Typography.reset());
-                document.getElementById("btnFontDown").addEventListener("click", () => Typography.dec());
-				
-                function setOptions(selectElement, options, placeholderText = "Select an option") {
-                    selectElement.innerHTML = "";
-                    const placeholder = document.createElement("option");
-                    placeholder.value = "";
-                    placeholder.textContent = placeholderText;
-                    selectElement.appendChild(placeholder);
-                    options.forEach((opt) => {
-                        const option = document.createElement("option");
-                        option.value = opt;
-                        option.textContent = opt;
-                        selectElement.appendChild(option);
-                    });
-                }
-				
-				function resetSelect(selectElement, placeholderText = "Select Option") {
-					selectElement.innerHTML = `<option value="">${placeholderText}</option>`;
+				function openModal() {
+				  DataTable.render();
+				  modal.style.display = "flex";
+				  modal.setAttribute("aria-hidden", "false");
+				  document.body.style.overflow = "hidden";
+				  closeButton.focus();
 				}
+				function closeModal() {
+				  modal.style.display = "none";
+				  modal.setAttribute("aria-hidden", "true");
+				  document.body.style.overflow = "";
+				  openButton.focus();
+				}
+				openButton.addEventListener("click", openModal);
+				closeButton.addEventListener("click", closeModal);
+				document.addEventListener("click", (e) => {
+				  const isModalOpen = modal.style.display === "flex";
+				  if (!isModalOpen) return;
+				  const clickedOutsideModal = !modalContent.contains(e.target);
+				  const clickedOnBackdrop = modal.contains(e.target);
+				  if (clickedOutsideModal && clickedOnBackdrop) closeModal();
+				});
+				document.addEventListener("keydown", (e) => {
+				  if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+				});
+			  })();
 
-			        directionSelect.addEventListener("change", () => {
-                    const value = directionSelect.value;
-                    const isNonVoice = value === "Non-Voice";
+			  // 5) Duplicates modal wiring (single-time)
+			  (function wireDuplicatesModal() {
+				const modal = document.getElementById("duplicatesModal");
+				const closeButton = modal.querySelector(".close-button");
+				const modalContent = modal.querySelector(".modal-content");
 
-                    // Show/hide non-voice fields
-                    nonVoiceFields.forEach((field) => {
-                        if (isNonVoice) {
-                            field.classList.remove("hidden-field");
-                        } else {
-                            field.classList.add("hidden-field");
-                        }
-                    });
+				function openModal() {
+				  modal.style.display = "flex";
+				  modal.setAttribute("aria-hidden", "false");
+				  document.body.style.overflow = "hidden";
+				  closeButton.focus();
+				  const tableInner = document.getElementById("duplicatesTableInner");
+				  const firstRow = document.querySelector("#duplicatesDataTable tbody tr");
+				  if (firstRow && tableInner) {
+					firstRow.scrollIntoView({ behavior: "smooth", block: "start" });
+					firstRow.classList.add("highlight-row");
+				  }
+				}
+				function closeModal() {
+				  modal.style.display = "none";
+				  modal.setAttribute("aria-hidden", "true");
+				  document.body.style.overflow = "";
+				}
+				window.openDuplicatesModal = openModal; // for Importer
+				closeButton.addEventListener("click", closeModal);
+				document.addEventListener("click", (e) => {
+				  const isModalOpen = modal.style.display === "flex";
+				  if (!isModalOpen) return;
+				  const clickedOutsideModal = !modalContent.contains(e.target);
+				  const clickedOnBackdrop = modal.contains(e.target);
+				  if (clickedOutsideModal && clickedOnBackdrop) closeModal();
+				});
+				document.addEventListener("keydown", (e) => {
+				  if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+				});
+			  })();
 
-                    // Helper: Sort options alphabetically
-                    const sortOptions = (arr) => arr.slice().sort((a, b) => a.localeCompare(b));
+			  // 6) Record count and quota
+			  function updateRecordCountDisplay() {
+				const countElement = document.getElementById("recordCountDisplay");
+				const labelElement = document.getElementById("recordCountLabel");
+				const clearElement = document.getElementById("recordCountForClearing");
+				if (!countElement || !labelElement) return;
 
-                    // Update Contact Direction and Contact Reason
-                    if (value === "Voice") {
-                        setOptions(contactDirectionSelect, sortOptions(["Inbound", "Outbound", "Service Call", "Transfer Call"]), "Select Contact Direction");
-                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore", "Malaysia"]), "Select Channel");
+				try {
+				  const dataArray = Storage.getAll();
+				  const count = Array.isArray(dataArray) ? dataArray.length : 0;
+				  countElement.textContent = count > 0 ? `(${count})` : "";
+				  labelElement.textContent = count > 0 ? `${count}` : "0";
+				  clearElement.textContent = count > 0 ? `(${count})` : "";
+				} catch {
+				  countElement.textContent = "";
+				  labelElement.textContent = "0";
+				  clearElement.textContent = "";
+				}
+			  }
+			  document.addEventListener("DOMContentLoaded", () => {
+				const allRecords = Storage.getAll();
+				updateProgressBar(allRecords.length, 1000);
+				updateRecordCountDisplay();
+			  });
 
-                        contactReasonMain.addEventListener("change", function () {
-                            const subReasonMap = {
-                                Complaint: sortOptions([
-									"CMP: Rude Behavior",
-									"CMP: Unprofessional Handling",
-									"CMP: Incorrect Information",
-									"CMP: Incomplete Information",
-									"CMP: Long Hold Time",
-									"CMP: No Follow-up",
-									"CMP: Delay in Service",
-									"CMP: Poor Repair Quality",
-									"CMP: Mishandling of Unit",
-									"CMP: Others (specify)",
-                                ]),
-                                Compliment: sortOptions([
-									"CPL: Courteous & Professional",
-									"CPL: Complete Information Provided",
-									"CPL: Quick Resolution",
-									"CPL: Excellent Communication",
-									"CPL: Followed Up Promptly",
-									"CPL: Clear Updates Provided",
-									"CPL: Quality Service or Repair",
-									"CPL: Handled Unit with Care",
-									"CPL: Others (specify)",
-                                ]),
-                                General: sortOptions([
-									"GEN: Company Info Inquiry",
-									"GEN: Career Opportunities (EPPI)",
-									"GEN: Career Opportunities (Internal)",
-									"GEN: Product Info Request",
-									"GEN: Promotions & Events",
-									"GEN: Documentation Request",
-									"GEN: General Feedback",
-									"GEN: Call Transfer Request",
-									"GEN: Call Escalation Request",
-									"GEN: Looking for Someone",
-									"GEN: Looking for Department",
-									"GEN: Internal Contact Info",
-									"GEN: Test Call / Email",
-									"GEN: Leasing Options",
-									"GEN: Volume Discount",
-									"GEN: Financing Options",
-									"GEN: Sponsorship Inquiry",
-									"GEN: Environmental Ratings",
-									"GEN: Others (specify)",
-                                ]),
-                                "Language Support": sortOptions([
-									"LANG: Malay/Bahasa", 
-									"LANG: Chinese/Mandarin", 
-									"LANG: Others (specify)",
-									]),
-                                "Line Issue": sortOptions([
-									"LINE: Distorted Line", 
-									"LINE: Line Disconnected", 
-									"LINE: Ghost Call", 
-									"LINE: Drop Call",
-								]),
-									Sales: sortOptions([
-									"WTB: Units",
-									"WTB: Consumables",
-									"WTB: Accessories",
-									"WTB: Parts",
-									"WTB: Bulk Purchase",
-									"WTB: Warranty Extension",
-									"WTB: Demo Units",
-									"PRI: Units",
-									"PRI: Consumables",
-									"PRI: Accessories",
-									"PRI: Parts",
-									"SPEC: Units",
-									"SPEC: Consumables",
-									"SPEC: Accessories",
-									"SPEC: Parts",
-									"SPEC: Product Overview",
-									"SPEC: Compatibility",
-									"SPEC: Ink Authenticity",
-									"SPEC: Warranty Terms",
-									"SPEC: Dimensions & Weight",
-									"QTN: Request",
-									"QTN: Follow-up",
-									"QTN: Revision",
-									"QTN: Validity",
-									"QTN: Bulk Order Quote",
-									"DLS: Application",
-									"DLS: Requirements",
-									"DLS: Status Update",
-									"PROMO: Trade-in Offers",
-									"PROMO: Redemption",
-									"PROMO: Seasonal Discounts",
-									"PROMO: Bundle Deals",
-									"SLS: Others (specify)",
-                                ]),
-                                Service: sortOptions([    
-									"REP: DOA Related",
-									"REP: Diagnostic",
-									"REP: Ink/Mbox Delivery",
-									"REP: Firmware Update",
-									"REP: PMS Calling",
-									"REP: Meter Reading",
-									"REP: Repair Follow-up",
-									"QTN: Quote Request",
-									"QTN: Quote Follow-up",
-									"QTN: Quote Revision",
-									"ASP: Application",
-									"ASP: Requirements",
-									"ASP: Status Update",
-									"ASP: Finding Service Center",
-									"REP: Others (specify)",                                
-								]),
-                                Technical: sortOptions([  
-									"PRT: Garbage Print",
-									"PRT: Streaks",
-									"PRT: Smudging",
-									"PRT: Banding / Missing Lines",
-									"PRT: Missing Color",
-									"PRT: Blank Print",
-									"PRT: Faded Print",
-									"PRT: Blurry Output",
-									"PRT: Alignment Issues",
-									"PRT: Pixelation",
-									"PRT: Inkpad EOL",
-									"PRT: Maintenance Box EOL",
-									"PRT: Maintenance Box Not Recognized",
-									"PRT: Paper Curling",
-									"PRT: Print Head Issue",
-									"PRT: Ink Not Recognized",
-									"PRT: Ink Smearing",
-									"PRT: Incorrect Margins",
-									"PPR: ADF Issue",
-									"PPR: Paper Jam",
-									"PPR: Skewed Feed",
-									"PPR: Multi-Sheet Feed",
-									"PPR: No Paper Feed",
-									"PPR: Wrong Size Detection",
-									"PPR: Paper Not Ejected",
-									"PPR: Duplex Error",
-									"PPR: Tray Empty Error",
-									"PPR: Broken Part(s)",
-									"PPR: Paper Size Mismatch",
-									"PPR: Unsupported Paper Type",
-									"PNL: Unresponsive Panel",
-									"PNL: Frozen Display",
-									"PNL: Error Code",
-									"PNL: Wrong Language",
-									"PNL: Touchscreen Not Working",
-									"PNL: Flickering Panel",
-									"PNL: Buttons Not Responding",
-									"PNL: Backlight Dim",
-									"PNL: Panel Calibration Issue",
-									"PNL: Block Dot",
-									"PNL: Blinking Error Light",
-									"PNL: All lights Blinking",
-									"PWR: No Power",
-									"PWR: Sudden Power Off",
-									"PWR: Power Button Issue",
-									"PWR: Power Supply Noise",
-									"PWR: Loose/Damaged Cord",
-									"PWR: Fatal Error",
-									"PWR: Overheating Power Supply",
-									"PWR: Auto Restart Loop",
-									"SCN: Blurry Scan",
-									"SCN: Blank Scan",
-									"SCN: Low Resolution",
-									"SCN: Color Distortion",
-									"SCN: Lines/Artifacts",
-									"SCN: File Not Saved",
-									"SCN: Scan Cropping Issue",
-									"SCN: Scan Orientation Wrong",
-									"SCN: Scanner not Working",
-									"SCN: Scan to Email Issue",
-									"SCN: Scan to Cloud Issue",
-									"CPY: Faded Copy",
-									"CPY: Dark Copy",
-									"CPY: Skewed Copy",
-									"CPY: Lines on Copy",
-									"CPY: Blank Copy",
-									"CPY: Misaligned Copy",
-									"CPY: Size Mismatch",
-									"CPY: Copy Cropping Issue",
-									"CPY: Copy Orientation Wrong",
-									"WF: Wi-Fi Setup",
-									"WF: Wi-Fi Not Detected",
-									"WF: Wi-Fi Drops/Intermittent",
-									"WF: Wrong Wi-Fi Password",
-									"WF: Weak Wi-Fi Signal",
-									"WF: Wi-Fi LED Off",
-									"WF: Wi-Fi Out of Order",
-									"WF: Wi-Fi Authentication Error",
-									"WFD: Wi-Fi Direct Setup",
-									"WFD: Wi-Fi Direct Not Detected",
-									"WFD: Wi-Fi Direct Drops/Intermittent",
-									"WFD: Wrong Wi-Fi Direct Password",
-									"WFD: Weak Wi-Fi Direct Signal",
-									"WFD: Wi-Fi Direct LED Off",
-									"WFD: Wi-Fi Direct Out of Order",
-									"WFD: Wi-Fi Direct Authentication Error",
-									"USB: USB Not Recognized",
-									"USB: USB Drops/Intermittent",
-									"USB: USB Port Damaged",
-									"USB: Driver Missing",
-									"USB: Slow Data Transfer",
-									"ETH: LAN No Connection",
-									"ETH: IP Conflict",
-									"ETH: Cable Not Detected",
-									"ETH: Slow Network",
-									"ETH: Config Error",
-									"ETH: DHCP Failure",
-									"MBL: Smart Panel Issue",
-									"MBL: iPrint Issue",
-									"MBL: iProjection Issue",
-									"MBL: Air Print Issue",
-									"PROJ: No Display",
-									"PROJ: Blurry Projection",
-									"PROJ: Color Distortion",
-									"PROJ: Flickering Image",
-									"PROJ: Keystone Error",
-									"PROJ: Projector Not Detected",
-									"PROJ: Overheating",
-									"PROJ: Lamp Warning/Error",
-									"PROJ: No Audio Output",
-									"PROJ: HDMI Port Not Detected",
-									"PROJ: Lens Focus Issue",
-									"TECH: Firmware Update Failed",
-									"TECH: Driver Installation Error",
-									"TECH: App Connectivity Issue",
-									"TECH: Others (specify)",
-								]),
-                                Warranty: sortOptions([
-									"WRTY: Warranty Claim",
-									"WRTY: Validation Request",
-									"WRTY: Period Inquiry",
-									"WRTY: Terms Clarification",
-									"WRTY: Extended Warranty Purchase",
-									"WRTY: Extended Warranty Options",
-									"WRTY: Proof of Purchase Submission",
-									"WRTY: Registration Assistance",
-									"WRTY: Transfer Request",
-									"WRTY: MYEpson Portal Assistance",
-									"WRTY: Others (specify)",                             
-								]),
-                            };
-                            const selectedMainReason = this.value;
-                            if (subReasonMap[selectedMainReason]) {
-                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
-                            } else {
-                                resetSelect(contactReasonSub, "Select Main Reason first");
-                            }
-                        });
-                    } else if (value === "EasyCare") {
-                        setOptions(contactDirectionSelect, sortOptions(["Inbound", "Outbound", "Non-Voice"]), "Select Contact Direction");
-                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore"]), "Select Channel");
-
-                        contactReasonMain.addEventListener("change", function () {
-                            const subReasonMap = {
-                                PMS: sortOptions([
-                                    "PMS: Scheduled PMS Calling",
-                                    "PMS: Scheduled Meter Reading",
-                                    "PMS: Others (specify)",
-                                ]),
-                                Service: sortOptions([
-                                    "REP: For Dispatch",
-                                    "REP: For Ink Delivery",
-                                    "REP: For Mbox Delivery",
-                                    "REP: Others (specify)",
-                                ]),
-                                Technical: sortOptions([  
-									"PRT: Garbage Print",
-									"PRT: Streaks",
-									"PRT: Smudging",
-									"PRT: Banding / Missing Lines",
-									"PRT: Missing Color",
-									"PRT: Blank Print",
-									"PRT: Faded Print",
-									"PRT: Blurry Output",
-									"PRT: Alignment Issues",
-									"PRT: Pixelation",
-									"PRT: Inkpad EOL",
-									"PRT: Maintenance Box EOL",
-									"PRT: Maintenance Box Not Recognized",
-									"PRT: Paper Curling",
-									"PRT: Print Head Issue",
-									"PRT: Ink Not Recognized",
-									"PRT: Ink Smearing",
-									"PRT: Incorrect Margins",
-									"PPR: ADF Issue",
-									"PPR: Paper Jam",
-									"PPR: Skewed Feed",
-									"PPR: Multi-Sheet Feed",
-									"PPR: No Paper Feed",
-									"PPR: Wrong Size Detection",
-									"PPR: Paper Not Ejected",
-									"PPR: Duplex Error",
-									"PPR: Tray Empty Error",
-									"PPR: Broken Part(s)",
-									"PPR: Paper Size Mismatch",
-									"PPR: Unsupported Paper Type",
-									"PNL: Unresponsive Panel",
-									"PNL: Frozen Display",
-									"PNL: Error Code",
-									"PNL: Wrong Language",
-									"PNL: Touchscreen Not Working",
-									"PNL: Flickering Panel",
-									"PNL: Buttons Not Responding",
-									"PNL: Backlight Dim",
-									"PNL: Panel Calibration Issue",
-									"PNL: Block Dot",
-									"PNL: Blinking Error Light",
-									"PNL: All lights Blinking",
-									"PWR: No Power",
-									"PWR: Sudden Power Off",
-									"PWR: Power Button Issue",
-									"PWR: Power Supply Noise",
-									"PWR: Loose/Damaged Cord",
-									"PWR: Fatal Error",
-									"PWR: Overheating Power Supply",
-									"PWR: Auto Restart Loop",
-									"SCN: Blurry Scan",
-									"SCN: Blank Scan",
-									"SCN: Low Resolution",
-									"SCN: Color Distortion",
-									"SCN: Lines/Artifacts",
-									"SCN: File Not Saved",
-									"SCN: Scan Cropping Issue",
-									"SCN: Scan Orientation Wrong",
-									"SCN: Scanner not Working",
-									"SCN: Scan to Email Issue",
-									"SCN: Scan to Cloud Issue",
-									"CPY: Faded Copy",
-									"CPY: Dark Copy",
-									"CPY: Skewed Copy",
-									"CPY: Lines on Copy",
-									"CPY: Blank Copy",
-									"CPY: Misaligned Copy",
-									"CPY: Size Mismatch",
-									"CPY: Copy Cropping Issue",
-									"CPY: Copy Orientation Wrong",
-									"WF: Wi-Fi Setup",
-									"WF: Wi-Fi Not Detected",
-									"WF: Wi-Fi Drops/Intermittent",
-									"WF: Wrong Wi-Fi Password",
-									"WF: Weak Wi-Fi Signal",
-									"WF: Wi-Fi LED Off",
-									"WF: Wi-Fi Out of Order",
-									"WF: Wi-Fi Authentication Error",
-									"WFD: Wi-Fi Direct Setup",
-									"WFD: Wi-Fi Direct Not Detected",
-									"WFD: Wi-Fi Direct Drops/Intermittent",
-									"WFD: Wrong Wi-Fi Direct Password",
-									"WFD: Weak Wi-Fi Direct Signal",
-									"WFD: Wi-Fi Direct LED Off",
-									"WFD: Wi-Fi Direct Out of Order",
-									"WFD: Wi-Fi Direct Authentication Error",
-									"USB: USB Not Recognized",
-									"USB: USB Drops/Intermittent",
-									"USB: USB Port Damaged",
-									"USB: Driver Missing",
-									"USB: Slow Data Transfer",
-									"ETH: LAN No Connection",
-									"ETH: IP Conflict",
-									"ETH: Cable Not Detected",
-									"ETH: Slow Network",
-									"ETH: Config Error",
-									"ETH: DHCP Failure",
-									"MBL: Smart Panel Issue",
-									"MBL: iPrint Issue",
-									"MBL: iProjection Issue",
-									"MBL: Air Print Issue",
-									"PROJ: No Display",
-									"PROJ: Blurry Projection",
-									"PROJ: Color Distortion",
-									"PROJ: Flickering Image",
-									"PROJ: Keystone Error",
-									"PROJ: Projector Not Detected",
-									"PROJ: Overheating",
-									"PROJ: Lamp Warning/Error",
-									"PROJ: No Audio Output",
-									"PROJ: HDMI Port Not Detected",
-									"PROJ: Lens Focus Issue",
-									"TECH: Firmware Update Failed",
-									"TECH: Driver Installation Error",
-									"TECH: App Connectivity Issue",
-									"TECH: Others (specify)",
-								]),
-                            };
-                            const selectedMainReason = this.value;
-                            if (subReasonMap[selectedMainReason]) {
-                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
-                            } else {
-                                resetSelect(contactReasonSub, "Select Main Reason first");
-                            }
-                        });
-                    } else if (value === "Non-Voice") {
-                        setOptions(contactDirectionSelect, sortOptions(["Email", "FB: Messenger", "FB: Post", "Instagram", "Linked In", "Service Call", "Transfer Call", "Viber Demo", "Webchat", "X (Twitter)"]), "Select Contact Direction");
-                        setOptions(channelSelect, sortOptions(["Philippines", "Singapore", "Malaysia"]), "Select Channel");
-
-                        contactReasonMain.addEventListener("change", function () {
-                            const subReasonMap = {
-                                Complaint: sortOptions([
-									"CMP: Rude Behavior",
-									"CMP: Unprofessional Handling",
-									"CMP: Incorrect Information",
-									"CMP: Incomplete Information",
-									"CMP: Long Hold Time",
-									"CMP: No Follow-up",
-									"CMP: Delay in Service",
-									"CMP: Poor Repair Quality",
-									"CMP: Mishandling of Unit",
-									"CMP: Others (specify)",
-                                ]),
-                                Compliment: sortOptions([
-									"CPL: Courteous & Professional",
-									"CPL: Complete Information Provided",
-									"CPL: Quick Resolution",
-									"CPL: Excellent Communication",
-									"CPL: Followed Up Promptly",
-									"CPL: Clear Updates Provided",
-									"CPL: Quality Service or Repair",
-									"CPL: Handled Unit with Care",
-									"CPL: Others (specify)",
-                                ]),
-                                General: sortOptions([
-									"GEN: Company Info Inquiry",
-									"GEN: Career Opportunities (EPPI)",
-									"GEN: Career Opportunities (Internal)",
-									"GEN: Product Info Request",
-									"GEN: Promotions & Events",
-									"GEN: Documentation Request",
-									"GEN: General Feedback",
-									"GEN: Call Transfer Request",
-									"GEN: Call Escalation Request",
-									"GEN: Looking for Someone",
-									"GEN: Looking for Department",
-									"GEN: Internal Contact Info",
-									"GEN: Test Call / Email",
-									"GEN: Leasing Options",
-									"GEN: Volume Discount",
-									"GEN: Financing Options",
-									"GEN: Sponsorship Inquiry",
-									"GEN: Environmental Ratings",
-									"GEN: Others (specify)",
-                                ]),
-                                "Language Support": sortOptions([
-									"LANG: Malay/Bahasa", 
-									"LANG: Chinese/Mandarin", 
-									"LANG: Others (specify)",
-									]),
-                                "Line Issue": sortOptions([
-									"LINE: Distorted Line", 
-									"LINE: Line Disconnected", 
-									"LINE: Ghost Call", 
-									"LINE: Drop Call",
-								]),
-									Sales: sortOptions([
-									"WTB: Units",
-									"WTB: Consumables",
-									"WTB: Accessories",
-									"WTB: Parts",
-									"WTB: Bulk Purchase",
-									"WTB: Warranty Extension",
-									"WTB: Demo Units",
-									"PRI: Units",
-									"PRI: Consumables",
-									"PRI: Accessories",
-									"PRI: Parts",
-									"SPEC: Units",
-									"SPEC: Consumables",
-									"SPEC: Accessories",
-									"SPEC: Parts",
-									"SPEC: Product Overview",
-									"SPEC: Compatibility",
-									"SPEC: Ink Authenticity",
-									"SPEC: Warranty Terms",
-									"SPEC: Dimensions & Weight",
-									"QTN: Request",
-									"QTN: Follow-up",
-									"QTN: Revision",
-									"QTN: Validity",
-									"QTN: Bulk Order Quote",
-									"DLS: Application",
-									"DLS: Requirements",
-									"DLS: Status Update",
-									"PROMO: Trade-in Offers",
-									"PROMO: Redemption",
-									"PROMO: Seasonal Discounts",
-									"PROMO: Bundle Deals",
-									"SLS: Others (specify)",
-                                ]),
-                                Service: sortOptions([    
-									"REP: DOA Related",
-									"REP: Diagnostic",
-									"REP: Ink/Mbox Delivery",
-									"REP: Firmware Update",
-									"REP: PMS Calling",
-									"REP: Meter Reading",
-									"REP: Repair Follow-up",
-									"QTN: Quote Request",
-									"QTN: Quote Follow-up",
-									"QTN: Quote Revision",
-									"ASP: Application",
-									"ASP: Requirements",
-									"ASP: Status Update",
-									"ASP: Finding Service Center",
-									"REP: Others (specify)",                                
-								]),
-                                Technical: sortOptions([  
-									"PRT: Garbage Print",
-									"PRT: Streaks",
-									"PRT: Smudging",
-									"PRT: Banding / Missing Lines",
-									"PRT: Missing Color",
-									"PRT: Blank Print",
-									"PRT: Faded Print",
-									"PRT: Blurry Output",
-									"PRT: Alignment Issues",
-									"PRT: Pixelation",
-									"PRT: Inkpad EOL",
-									"PRT: Maintenance Box EOL",
-									"PRT: Maintenance Box Not Recognized",
-									"PRT: Paper Curling",
-									"PRT: Print Head Issue",
-									"PRT: Ink Not Recognized",
-									"PRT: Ink Smearing",
-									"PRT: Incorrect Margins",
-									"PPR: ADF Issue",
-									"PPR: Paper Jam",
-									"PPR: Skewed Feed",
-									"PPR: Multi-Sheet Feed",
-									"PPR: No Paper Feed",
-									"PPR: Wrong Size Detection",
-									"PPR: Paper Not Ejected",
-									"PPR: Duplex Error",
-									"PPR: Tray Empty Error",
-									"PPR: Broken Part(s)",
-									"PPR: Paper Size Mismatch",
-									"PPR: Unsupported Paper Type",
-									"PNL: Unresponsive Panel",
-									"PNL: Frozen Display",
-									"PNL: Error Code",
-									"PNL: Wrong Language",
-									"PNL: Touchscreen Not Working",
-									"PNL: Flickering Panel",
-									"PNL: Buttons Not Responding",
-									"PNL: Backlight Dim",
-									"PNL: Panel Calibration Issue",
-									"PNL: Block Dot",
-									"PNL: Blinking Error Light",
-									"PNL: All lights Blinking",
-									"PWR: No Power",
-									"PWR: Sudden Power Off",
-									"PWR: Power Button Issue",
-									"PWR: Power Supply Noise",
-									"PWR: Loose/Damaged Cord",
-									"PWR: Fatal Error",
-									"PWR: Overheating Power Supply",
-									"PWR: Auto Restart Loop",
-									"SCN: Blurry Scan",
-									"SCN: Blank Scan",
-									"SCN: Low Resolution",
-									"SCN: Color Distortion",
-									"SCN: Lines/Artifacts",
-									"SCN: File Not Saved",
-									"SCN: Scan Cropping Issue",
-									"SCN: Scan Orientation Wrong",
-									"SCN: Scanner not Working",
-									"SCN: Scan to Email Issue",
-									"SCN: Scan to Cloud Issue",
-									"CPY: Faded Copy",
-									"CPY: Dark Copy",
-									"CPY: Skewed Copy",
-									"CPY: Lines on Copy",
-									"CPY: Blank Copy",
-									"CPY: Misaligned Copy",
-									"CPY: Size Mismatch",
-									"CPY: Copy Cropping Issue",
-									"CPY: Copy Orientation Wrong",
-									"WF: Wi-Fi Setup",
-									"WF: Wi-Fi Not Detected",
-									"WF: Wi-Fi Drops/Intermittent",
-									"WF: Wrong Wi-Fi Password",
-									"WF: Weak Wi-Fi Signal",
-									"WF: Wi-Fi LED Off",
-									"WF: Wi-Fi Out of Order",
-									"WF: Wi-Fi Authentication Error",
-									"WFD: Wi-Fi Direct Setup",
-									"WFD: Wi-Fi Direct Not Detected",
-									"WFD: Wi-Fi Direct Drops/Intermittent",
-									"WFD: Wrong Wi-Fi Direct Password",
-									"WFD: Weak Wi-Fi Direct Signal",
-									"WFD: Wi-Fi Direct LED Off",
-									"WFD: Wi-Fi Direct Out of Order",
-									"WFD: Wi-Fi Direct Authentication Error",
-									"USB: USB Not Recognized",
-									"USB: USB Drops/Intermittent",
-									"USB: USB Port Damaged",
-									"USB: Driver Missing",
-									"USB: Slow Data Transfer",
-									"ETH: LAN No Connection",
-									"ETH: IP Conflict",
-									"ETH: Cable Not Detected",
-									"ETH: Slow Network",
-									"ETH: Config Error",
-									"ETH: DHCP Failure",
-									"MBL: Smart Panel Issue",
-									"MBL: iPrint Issue",
-									"MBL: iProjection Issue",
-									"MBL: Air Print Issue",
-									"PROJ: No Display",
-									"PROJ: Blurry Projection",
-									"PROJ: Color Distortion",
-									"PROJ: Flickering Image",
-									"PROJ: Keystone Error",
-									"PROJ: Projector Not Detected",
-									"PROJ: Overheating",
-									"PROJ: Lamp Warning/Error",
-									"PROJ: No Audio Output",
-									"PROJ: HDMI Port Not Detected",
-									"PROJ: Lens Focus Issue",
-									"TECH: Firmware Update Failed",
-									"TECH: Driver Installation Error",
-									"TECH: App Connectivity Issue",
-									"TECH: Others (specify)",
-								]),
-                                Warranty: sortOptions([
-									"WRTY: Warranty Claim",
-									"WRTY: Validation Request",
-									"WRTY: Period Inquiry",
-									"WRTY: Terms Clarification",
-									"WRTY: Extended Warranty Purchase",
-									"WRTY: Extended Warranty Options",
-									"WRTY: Proof of Purchase Submission",
-									"WRTY: Registration Assistance",
-									"WRTY: Transfer Request",
-									"WRTY: MYEpson Portal Assistance",
-									"WRTY: Others (specify)",                             
-								]),
-                            };
-                            const selectedMainReason = this.value;
-                            if (subReasonMap[selectedMainReason]) {
-                                setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
-                            } else {
-                                resetSelect(contactReasonSub, "Select Main Reason first");
-                            }
-                        });
-                    } else {
-                        resetSelect(contactDirectionSelect, "Select Contact Direction");
-                        resetSelect(contactReasonMain, "Select Contact Reason");
-                        resetSelect(channelSelect, "Select Channel");
-                        resetSelect(contactReasonSub, "Select Main Reason first");
-                    }
-
-                    // Main Reason based on Direction 
-					if (value === "Voice" || "Non-Voice") {
-						setOptions(
-							contactReasonMain,
-							sortOptions([
-								"Complaint",
-								"Compliment",
-								"General",
-								"Line Issue",
-								"Language Support",
-								"Sales",
-								"Service",
-								"Technical",
-								"Warranty"
-							]),
-							"Select Contact Reason"
-						);
-					} else if (value === "EasyCare") {
-						setOptions(
-							contactReasonMain,
-							sortOptions([
-								"PMS",
-								"Service",
-								"Technical"
-							]),
-							"Select Contact Reason"
-						);
-					} else {
-						resetSelect(contactReasonMain, "Select Contact Reason");
-					}	
-
-				if (value === "Voice") {
-					setOptions(agentSelect, sortOptions(["Ains", "Batch", "Ben", "Chery", "Dennis", "Gail", "James", "John", "Kath", "Nico", "Philip", "Precy", "Princess", "Raine", "Rio", "Tristan", "Vina"]), "Select Agent");
-					setOptions(productCategorySelect, sortOptions(["Printers", "Printing Solutions", "Visual Products", "Scanners", "Others", "Unable to get the model"]), "Select Category");
-					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
-					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
-					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
-					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
-					
-                } else if (value === "Non-Voice") {
-					setOptions(agentSelect, sortOptions(["Ains", "Batch", "Ben", "Chery", "Dennis", "Gail", "James", "John", "Kath", "Nico", "Philip", "Precy", "Princess", "Raine", "Rio", "Tristan", "Vina"]), "Select Agent");
-					setOptions(productCategorySelect, sortOptions(["Printers", "Printing Solutions", "Visual Products", "Scanners", "Others", "Unable to get the model"]), "Select Category");
-					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
-					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
-					setOptions(hoopSelect, sortOptions(["Yes", "No", "Sunday", "Repeat Call"]), "Select Option");
-					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
-					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
-				
-				} else if (value === "EasyCare") {
-					setOptions(agentSelect, sortOptions(["Gail", "James", "John", "Philip"]), "Select Agent");
-					setOptions(productCategorySelect, sortOptions(["Printing Solutions"]), "Select Category");
-					setOptions(captureSource, sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]), "Select Source");
-					setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
-					setOptions(isSurveySent, sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]), "Select Option");
-					setOptions(customerType, sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]), "Select Type");
-				
+			  // 7) Buttons: Save, Clone, Export, Clear, Search, Edit, Delete, Import
+			  btnSave.addEventListener("click", () => {
+				if (dataForm && dataForm.hasAttribute("data-editing-id")) {
+				  Utils.alert("Form is in 'Edit Mode'. To save this as a new record, click 'Save As New'.");
+				  return;
+				}
+				const entry = Form.buildEntry();
+				if (!entry) return;
+				delete entry.id;
+				const ok = Storage.append(entry);
+				if (ok) {
+				  updateRecordCountDisplay();
+				  DataTable.render();
+				  checkQuotaAndPromptExport();
+				  dataForm.reset();
 				} else {
-						resetSelect(agentSelect, "Select Agent");
-						resetSelect(productCategorySelect, "Select Option");
-						resetSelect(captureSource, "Select Source");
-						resetSelect(isVRAUtilized, "Select Option");
-						resetSelect(isSurveySent, "Select Option");
-						resetSelect(customerType, "Select Option");
-						resetSelect(hoopSelect, "Select Option");
-				};
-                });
-				
-				function updateClosingDispo() {
-					const reasonMain = contactReasonMain.value;
-					const direction = directionSelect.value;
-					const contactDirection = contactDirectionSelect.value;
-					const nonVoiceChannels = ["Email", "FB: Messenger", "FB: Post", "Instagram", "Linked In", "Viber Demo", "WebChat", "X (Twitter)"];
-					const isNonVoiceChannel = nonVoiceChannels.includes(contactDirection);
-
-
-					// Helper: Sort options alphabetically
-					const sortOptions = (arr) => arr.slice().sort((a, b) => a.localeCompare(b));
-
-					// Voice Direction to Contact Direction to Main Reason to setting Closing Disposition
-						// For Complaints and Compliments
-					if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && (reasonMain === "Complaint" || reasonMain === "Compliment")) {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Call", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For General, Sales, Technical, Service, and Warranty Concerns
-					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Service" || reasonMain === "Warranty")) {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Call", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Line Issues
-					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && reasonMain === "Line Issue") {
-						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Language Support
-					} else if (direction === "Voice" && (contactDirection === "Inbound" || contactDirection === "Outbound" ) && reasonMain === "Language Support") {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-					// Non-Voice Direction to Contact Direction to Main Reason to Setting Closing Disposition
-						// For Complaints and Compliments
-					} else if (direction === "Non-Voice" && isNonVoiceChannel && (reasonMain === "Complaint" || reasonMain === "Compliment"))
-					{
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Email/Chat", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For General, Sales, Technical, Service, and Warranty Concerns
-					} else if (direction === "Non-Voice" && isNonVoiceChannel && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Service" || reasonMain === "Warranty")) {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Email/Chat", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Line Issues
-					} else if (direction === "Non-Voice" && isNonVoiceChannel && reasonMain === "Line Issue") {
-						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Language Support
-					} else if (direction === "Non-Voice" && isNonVoiceChannel && reasonMain === "Language Support") {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-					}
-					
-					// EasyCare Direction to Contact Direction to Main Reason to Setting Closing Disposition
-						// For Service Reasons
-					 else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Service") {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "For Dispatch-Cons", "For Dispatch-Parts", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Repeat Call/Email"]), "Select Disposition");	
-						
-						// For Complaints and Compliments
-					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && (reasonMain === "Complaint" || reasonMain === "Compliment"))
-					{
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Escalated to L2/TL", "Line Disconnected", "Repeat Email/Chat", "Resolved by L2/TL", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For General, Sales, Technical and Warranty Concerns
-					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && (reasonMain === "General" || reasonMain === "Sales" || reasonMain === "Technical" || reasonMain === "Warranty")) {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Repeat Email/Chat", "Resolved By L1", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Line Issues
-					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Line Issue") {
-						setOptions(closingDispo, sortOptions(["Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-						
-						// For Language Support
-					} else if (direction === "EasyCare" && (contactDirection === "Inbound" || contactDirection === "Non-Voice" || contactDirection === "Outbound") && reasonMain === "Language Support") {
-						setOptions(closingDispo, sortOptions(["Escalated to Client", "Line Disconnected", "Unresolved: EU Will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-					}
-					
-					// Voice and Non-Voice Direction to Service Call to Setting Closing Disposition
-					 else if ((direction === "Voice" || direction === "Non-Voice") && (contactDirection === "Service Call")) {
-						contactReasonMain.value = "Technical";
-						setOptions(closingDispo, sortOptions(["For Dispatch", "For Carry-In"]), "Select Disposition");
-					}
-					// Voice and Non-Voice Direction to Transfer Call to Setting Closing Disposition
-					 else if ((direction === "Voice" || direction === "Non-Voice") && (contactDirection === "Transfer Call")) {
-						setOptions(closingDispo, sortOptions(["Escalate to L2/TL", "Line Disconnected", "Unresolved: EU will Call/Email Back", "Unresolved: Need to do Outbound"]), "Select Disposition");
-					};
+				  Utils.alert("Failed to save data.");
 				}
-				
-				contactDirectionSelect.addEventListener("change", () => {
-					updateClosingDispo();
+			  });
+
+			  btnSaveAsNew.addEventListener("click", () => {
+				if (dataForm && dataForm.hasAttribute("data-editing-id")) {
+				  dataForm.removeAttribute("data-editing-id");
+				}
+				const entry = Form.buildEntry();
+				if (!entry) return;
+				delete entry.id;
+				const ok = Storage.append(entry);
+				if (ok) {
+				  updateRecordCountDisplay();
+				  DataTable.render();
+				  checkQuotaAndPromptExport();
+				  Utils.alert("Saved as a new record. Original entry remains unchanged.");
+				} else {
+				  Utils.alert("Failed to save data.");
+				}
+			  });
+
+			  btnExport.addEventListener("click", () => {
+				Exporter.exportAll("raw_datacaps.csv");
+			  });
+
+			  btnClear.addEventListener("click", async () => {
+				const confirmed = await Utils.confirm(
+				  "Are you sure you want to clear all stored data? This cannot be undone."
+				);
+				if (!confirmed) return;
+				const ok = Storage.clearAll();
+				Utils.alert(ok ? "All stored data cleared." : "Failed to clear data.");
+				if (ok) {
+				  updateRecordCountDisplay();
+				  DataTable.render();
+				  searchInput.value = "";
+				  checkQuotaAndPromptExport();
+				  dataForm.removeAttribute("data-editing-id");
+				}
+			  });
+
+			  btnReset.addEventListener("click", Form.resetForm);
+
+			  btnSearch.addEventListener("click", () => {
+				const searchTerm = searchInput.value.trim();
+				dataForm.removeAttribute("data-editing-id");
+				if (!searchTerm) {
+				  Utils.alert("Please enter a term (ID, Transaction, or Phone) to search.");
+				  return;
+				}
+				const filteredEntries = DataTable.search(searchTerm);
+				if (filteredEntries && filteredEntries.length === 1) {
+				  const entry = filteredEntries[0];
+				  Form.populate(entry);
+				  Utils.alert(
+					`Found unique record ID ${entry.id.substring(3, 10)}... and loaded for editing. Click EDIT to update.`
+				  );
+				} else if (filteredEntries && filteredEntries.length > 1) {
+				  Utils.alert(
+					`Found ${filteredEntries.length} records. Please use the table to confirm the entry, then click EDIT/Update.`
+				  );
+				} else {
+				  Utils.alert("No records found matching your search term.");
+				}
+			  });
+
+			  btnEdit.addEventListener("click", () => {
+				const existingId = dataForm ? dataForm.dataset.editingId : null;
+				if (!existingId) {
+				  Utils.alert("No record loaded for editing. Please use Search first.");
+				  return;
+				}
+				if (Form.validateVisibleFields()) {
+				  const updatedEntry = Form.buildEntry();
+				  if (!updatedEntry || !updatedEntry.id) {
+					Utils.alert("Update failed: Record ID is missing.");
+					return;
+				  }
+				  const ok = Storage.update(updatedEntry);
+				  if (ok) {
+					updateRecordCountDisplay();
+					DataTable.render();
+					Form.resetForm();
+					Utils.alert(`Entry ID ${updatedEntry.id.substring(3, 10)}... UPDATED successfully! Form reset.`);
+				  } else {
+					Utils.alert("Failed to update data.");
+				  }
+				}
+			  });
+
+			  btnDelete.addEventListener("click", async () => {
+				const existingId = dataForm ? dataForm.dataset.editingId : null;
+				if (!existingId) {
+				  Utils.alert("No record loaded for deletion. Please use the Search button first.");
+				  return;
+				}
+				const confirmed = await Utils.confirm(
+				  `Are you sure you want to permanently delete the entry ID ${existingId.substring(3, 10)}...?`
+				);
+				if (!confirmed) return;
+				const ok = Storage.remove(existingId);
+				if (ok) {
+				  updateRecordCountDisplay();
+				  Utils.alert("Entry deleted successfully! Table updated.");
+				  searchInput.value = "";
+				  Form.resetForm();
+				  DataTable.render();
+				} else {
+				  Utils.alert("Failed to delete entry. It may no longer exist.");
+				}
+			  });
+
+			  btnImport.addEventListener("click", () => fileInput.click());
+			  fileInput.addEventListener("change", () => {
+				Importer.importData();
+			  });
+
+			  // 8) Direction-driven chains
+			  directionSelect.addEventListener("change", () => {
+				const value = directionSelect.value;
+				const isNonVoice = value === "Non-Voice";
+
+				// Show/hide non-voice fields
+				nonVoiceFields.forEach((field) => {
+				  if (!field) return;
+				  field.classList.toggle("hidden-field", !isNonVoice);
 				});
-				
-				directionSelect.addEventListener("change", () => {
-					updateClosingDispo();
-				});
-				
-				contactReasonMain.addEventListener("change", () => {
-					updateClosingDispo();
-				});
-				
-                const productSubcategories = {
-                    "Printers": ["BIJ/CIJ", "CISS/MONO", "Labelworks", "POS", "SIDM", "Minilab", "Laser"],
-                    "Printing Solutions": ["BIJ/CIJ Pro", "RIPS/LIJ", "Colour Label", "Label Press", "LFP", "Photo/Proof"],
-                    "Visual Products": ["Business Projector", "Home Projector", "High Brightness"],
-                    "Scanners": ["Document", "Photo"],
-                    "Others": ["Others"],
-                    "Unable to get the model": ["Unable to get the model"],
-                };
 
-                const subcategoryToCustomerType = {
-					// MERI-B2C
-                    "Business Projector": "MERI-B2C",
-                    "CISS/MONO": "MERI-B2C",
-                    "BIJ/CIJ": "MERI-B2C",
-                    "Labelworks": "MERI-B2C",
-                    "SIDM": "MERI-B2C",
+				// Contact direction and channel by direction
+				if (value === "Voice") {
+				  setOptions(
+					contactDirectionSelect,
+					sortOptions(["Inbound", "Outbound", "Service Call", "Transfer Call"]),
+					"Select Contact Direction"
+				  );
+				  setOptions(
+					channelSelect,
+					sortOptions(["Philippines", "Singapore", "Malaysia"]),
+					"Select Channel"
+				  );
 
-					// MERI-B2B
-                    "Laser": "MERI-B2B",
-                    "Minilab": "MERI-B2B",
-                    "Photo/Proof": "MERI-B2B",
-                    "Document": "MERI-B2B",
-                    "Photo": "MERI-B2B",
-                    "POS": "MERI-B2B",
-					
-					// HARI-B2C
-                    "Home Projector": "HARI-B2C",
-					
-					// HARI-B2B
-                    "BIJ/CIJ Pro": "HARI-B2B",
-                    "RIPS/LIJ": "HARI-B2B", 
-                    "Colour Label": "HARI-B2B",
-                    "Label Press": "HARI-B2B",
-                    "LFP": "HARI-B2B",
-                    "High Brightness": "HARI-B2B",
-					
-					// OTHERS and UNABLE TO GET THE MODELS
-                    "Others": "N/A",
-                    "Unable to get the model": "N/A",
-                };
+				  // Main reason options
+				  setOptions(
+					contactReasonMain,
+					sortOptions([
+					  "Complaint",
+					  "Compliment",
+					  "General",
+					  "Line Issue",
+					  "Language Support",
+					  "Sales",
+					  "Service",
+					  "Technical",
+					  "Warranty",
+					]),
+					"Select Contact Reason"
+				  );
+				} else if (value === "Non-Voice") {
+				  setOptions(
+					contactDirectionSelect,
+					sortOptions([
+					  "Email",
+					  "FB: Messenger",
+					  "FB: Post",
+					  "Instagram",
+					  "Linked In",
+					  "Service Call",
+					  "Transfer Call",
+					  "Viber Demo",
+					  "Webchat",
+					  "X (Twitter)",
+					]),
+					"Select Contact Direction"
+				  );
+				  setOptions(
+					channelSelect,
+					sortOptions(["Philippines", "Singapore", "Malaysia"]),
+					"Select Channel"
+				  );
 
-                productCategorySelect.addEventListener("change", (event) => {
-                    const category = event.target.value;
-                    productSubcategorySelect.innerHTML = '<option value="">Select a category first</option>';
-					customerType.innerHTML = '<option value="">Select a sub-category first</option>';
-                    if (category && productSubcategories[category]) {
-                        productSubcategories[category].forEach((sub) => {
-                            const option = document.createElement("option");
-                            option.value = sub;
-                            option.textContent = sub;
-                            productSubcategorySelect.appendChild(option);
-                        });
-                    }
-                });
+				  setOptions(
+					contactReasonMain,
+					sortOptions([
+					  "Complaint",
+					  "Compliment",
+					  "General",
+					  "Line Issue",
+					  "Language Support",
+					  "Sales",
+					  "Service",
+					  "Technical",
+					  "Warranty",
+					]),
+					"Select Contact Reason"
+				  );
+				} else if (value === "EasyCare") {
+				  setOptions(
+					contactDirectionSelect,
+					sortOptions(["Inbound", "Outbound", "Non-Voice"]),
+					"Select Contact Direction"
+				  );
+				  setOptions(channelSelect, sortOptions(["Philippines", "Singapore"]), "Select Channel");
+				  setOptions(contactReasonMain, sortOptions(["PMS", "Service", "Technical"]), "Select Contact Reason");
+				} else {
+				  resetSelect(contactDirectionSelect, "Select Contact Direction");
+				  resetSelect(channelSelect, "Select Channel");
+				  resetSelect(contactReasonMain, "Select Contact Reason");
+				  resetSelect(contactReasonSub, "Select Main Reason first");
+				}
 
-                productSubcategorySelect.addEventListener("change", (event) => {
-                    const subcategory = event.target.value;
-					const mappedType = subcategoryToCustomerType[subcategory];
+				// Agents, product category, sources, etc. by direction
+				if (value === "Voice") {
+				  setOptions(
+					agentSelect,
+					sortOptions([
+					  "Ains",
+					  "Batch",
+					  "Ben",
+					  "Chery",
+					  "Dennis",
+					  "Gail",
+					  "James",
+					  "John",
+					  "Kath",
+					  "Nico",
+					  "Philip",
+					  "Precy",
+					  "Princess",
+					  "Raine",
+					  "Rio",
+					  "Tristan",
+					  "Vina",
+					]),
+					"Select Agent"
+				  );
+				  setOptions(
+					productCategorySelect,
+					sortOptions([
+					  "Printers",
+					  "Printing Solutions",
+					  "Visual Products",
+					  "Scanners",
+					  "Others",
+					  "Unable to get the model",
+					]),
+					"Select Category"
+				  );
+				  setOptions(
+					captureSource,
+					sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]),
+					"Select Source"
+				  );
+				  setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Call"]), "Select Option");
+				  setOptions(
+					isSurveySent,
+					sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Call"]),
+					"Select Option"
+				  );
+				  setOptions(
+					customerType,
+					sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]),
+					"Select Type"
+				  );
+				} else if (value === "Non-Voice") {
+				  setOptions(
+					agentSelect,
+					sortOptions([
+					  "Ains",
+					  "Batch",
+					  "Ben",
+					  "Chery",
+					  "Dennis",
+					  "Gail",
+					  "James",
+					  "John",
+					  "Kath",
+					  "Nico",
+					  "Philip",
+					  "Precy",
+					  "Princess",
+					  "Raine",
+					  "Rio",
+					  "Tristan",
+					  "Vina",
+					]),
+					"Select Agent"
+				  );
+				  setOptions(
+					productCategorySelect,
+					sortOptions([
+					  "Printers",
+					  "Printing Solutions",
+					  "Visual Products",
+					  "Scanners",
+					  "Others",
+					  "Unable to get the model",
+					]),
+					"Select Category"
+				  );
+				  setOptions(
+					captureSource,
+					sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]),
+					"Select Source"
+				  );
+				  setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Email/Chat"]), "Select Option");
+				  setOptions(hoopSelect, sortOptions(["Yes", "No", "Sunday", "Repeat Email/Chat"]), "Select Option");
+				  setOptions(
+					isSurveySent,
+					sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Email/Chat"]),
+					"Select Option"
+				  );
+				  setOptions(
+					customerType,
+					sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]),
+					"Select Type"
+				  );
+				} else if (value === "EasyCare") {
+				  setOptions(agentSelect, sortOptions(["Gail", "James", "John", "Philip"]), "Select Agent");
+				  setOptions(productCategorySelect, sortOptions(["Printing Solutions"]), "Select Category");
+				  setOptions(
+					captureSource,
+					sortOptions(["Client", "Customer", "Dealer", "Service Partner", "Others"]),
+					"Select Source"
+				  );
+				  setOptions(isVRAUtilized, sortOptions(["Yes", "No", "Repeat Email/Chat"]), "Select Option");
+				  setOptions(
+					isSurveySent,
+					sortOptions(["Yes via Email", "Yes via SMS", "Yes via Email and SMS", "No", "Repeat Email/Chat"]),
+					"Select Option"
+				  );
+				  setOptions(
+					customerType,
+					sortOptions(["HARI-B2B", "HARI-B2C", "MERI-B2B", "MERI-B2C", "N/A"]),
+					"Select Type"
+				  );
+				} else {
+				  resetSelect(agentSelect, "Select Agent");
+				  resetSelect(productCategorySelect, "Select Option");
+				  resetSelect(captureSource, "Select Source");
+				  resetSelect(isVRAUtilized, "Select Option");
+				  resetSelect(isSurveySent, "Select Option");
+				  resetSelect(customerType, "Select Option");
+				  resetSelect(hoopSelect, "Select Option");
+				}
+			  });
 
-					if (mappedType) {
-						// Clear and repopulate customerType with mapped value
-						customerType.innerHTML = `<option value="">Select a sub-category first</option><option value="${mappedType}">${mappedType}</option>`;
-						customerType.value = mappedType;
+			  // Sub-reason population per main reason, tied to current direction
+			  contactReasonMain.addEventListener("change", function () {
+				const isEasyCare = directionSelect.value === "EasyCare";
+				const subReasonMap = isEasyCare
+				  ? {
+					  PMS: sortOptions([
+						"PMS: Scheduled PMS Calling",
+						"PMS: Scheduled Meter Reading",
+						"PMS: Others (specify)",
+					  ]),
+					  Service: sortOptions([
+						"REP: For Dispatch",
+						"REP: For Ink Delivery",
+						"REP: For Mbox Delivery",
+						"REP: Others (specify)",
+					  ]),
+					  Technical: sortOptions([
+						"PRT: Garbage Print",
+						"PRT: Streaks",
+						"PRT: Smudging",
+						"PRT: Banding / Missing Lines",
+						"PRT: Missing Color",
+						"PRT: Blank Print",
+						"PRT: Faded Print",
+						"PRT: Blurry Output",
+						"PRT: Alignment Issues",
+						"PRT: Pixelation",
+						"PRT: Inkpad EOL",
+						"PRT: Maintenance Box EOL",
+						"PRT: Maintenance Box Not Recognized",
+						"PRT: Paper Curling",
+						"PRT: Print Head Issue",
+						"PRT: Ink Not Recognized",
+						"PRT: Ink Smearing",
+						"PRT: Incorrect Margins",
+						"PPR: ADF Issue",
+						"PPR: Paper Jam",
+						"PPR: Skewed Feed",
+						"PPR: Multi-Sheet Feed",
+						"PPR: No Paper Feed",
+						"PPR: Wrong Size Detection",
+						"PPR: Paper Not Ejected",
+						"PPR: Duplex Error",
+						"PPR: Tray Empty Error",
+						"PPR: Broken Part(s)",
+						"PPR: Paper Size Mismatch",
+						"PPR: Unsupported Paper Type",
+						"PNL: Unresponsive Panel",
+						"PNL: Frozen Display",
+						"PNL: Error Code",
+						"PNL: Wrong Language",
+						"PNL: Touchscreen Not Working",
+						"PNL: Flickering Panel",
+						"PNL: Buttons Not Responding",
+						"PNL: Backlight Dim",
+						"PNL: Panel Calibration Issue",
+						"PNL: Block Dot",
+						"PNL: Blinking Error Light",
+						"PNL: All lights Blinking",
+						"PWR: No Power",
+						"PWR: Sudden Power Off",
+						"PWR: Power Button Issue",
+						"PWR: Power Supply Noise",
+						"PWR: Loose/Damaged Cord",
+						"PWR: Fatal Error",
+						"PWR: Overheating Power Supply",
+						"PWR: Auto Restart Loop",
+						"SCN: Blurry Scan",
+						"SCN: Blank Scan",
+						"SCN: Low Resolution",
+						"SCN: Color Distortion",
+						"SCN: Lines/Artifacts",
+						"SCN: File Not Saved",
+						"SCN: Scan Cropping Issue",
+						"SCN: Scan Orientation Wrong",
+						"SCN: Scanner not Working",
+						"SCN: Scan to Email Issue",
+						"SCN: Scan to Cloud Issue",
+						"CPY: Faded Copy",
+						"CPY: Dark Copy",
+						"CPY: Skewed Copy",
+						"CPY: Lines on Copy",
+						"CPY: Blank Copy",
+						"CPY: Misaligned Copy",
+						"CPY: Size Mismatch",
+						"CPY: Copy Cropping Issue",
+						"CPY: Copy Orientation Wrong",
+						"WF: Wi-Fi Setup",
+						"WF: Wi-Fi Not Detected",
+						"WF: Wi-Fi Drops/Intermittent",
+						"WF: Wrong Wi-Fi Password",
+						"WF: Weak Wi-Fi Signal",
+						"WF: Wi-Fi LED Off",
+						"WF: Wi-Fi Out of Order",
+						"WF: Wi-Fi Authentication Error",
+						"WFD: Wi-Fi Direct Setup",
+						"WFD: Wi-Fi Direct Not Detected",
+						"WFD: Wi-Fi Direct Drops/Intermittent",
+						"WFD: Wrong Wi-Fi Direct Password",
+						"WFD: Weak Wi-Fi Direct Signal",
+						"WFD: Wi-Fi Direct LED Off",
+						"WFD: Wi-Fi Direct Out of Order",
+						"WFD: Wi-Fi Direct Authentication Error",
+						"USB: USB Not Recognized",
+						"USB: USB Drops/Intermittent",
+						"USB: USB Port Damaged",
+						"USB: Driver Missing",
+						"USB: Slow Data Transfer",
+						"ETH: LAN No Connection",
+						"ETH: IP Conflict",
+						"ETH: Cable Not Detected",
+						"ETH: Slow Network",
+						"ETH: Config Error",
+						"ETH: DHCP Failure",
+						"MBL: Smart Panel Issue",
+						"MBL: iPrint Issue",
+						"MBL: iProjection Issue",
+						"MBL: Air Print Issue",
+						"PROJ: No Display",
+						"PROJ: Blurry Projection",
+						"PROJ: Color Distortion",
+						"PROJ: Flickering Image",
+						"PROJ: Keystone Error",
+						"PROJ: Projector Not Detected",
+						"PROJ: Overheating",
+						"PROJ: Lamp Warning/Error",
+						"PROJ: No Audio Output",
+						"PROJ: HDMI Port Not Detected",
+						"PROJ: Lens Focus Issue",
+						"TECH: Firmware Update Failed",
+						"TECH: Driver Installation Error",
+						"TECH: App Connectivity Issue",
+						"TECH: Others (specify)",
+					  ]),
 					}
-                });
-				
-				document.getElementById("fldIsSurveySent").addEventListener("change", (event) => {
-					const surveyValue = event.target.value;
-					const surveyEmailField = document.getElementById("survey-email-field");
+				  : {
+					  Complaint: sortOptions([
+						"CMP: Rude Behavior",
+						"CMP: Unprofessional Handling",
+						"CMP: Incorrect Information",
+						"CMP: Incomplete Information",
+						"CMP: Long Hold Time",
+						"CMP: No Follow-up",
+						"CMP: Delay in Service",
+						"CMP: Poor Repair Quality",
+						"CMP: Mishandling of Unit",
+						"CMP: Others (specify)",
+					  ]),
+					  Compliment: sortOptions([
+						"CPL: Courteous & Professional",
+						"CPL: Complete Information Provided",
+						"CPL: Quick Resolution",
+						"CPL: Excellent Communication",
+						"CPL: Followed Up Promptly",
+						"CPL: Clear Updates Provided",
+						"CPL: Quality Service or Repair",
+						"CPL: Handled Unit with Care",
+						"CPL: Others (specify)",
+					  ]),
+					  General: sortOptions([
+						"GEN: Company Info Inquiry",
+						"GEN: Career Opportunities (EPPI)",
+						"GEN: Career Opportunities (Internal)",
+						"GEN: Product Info Request",
+						"GEN: Promotions & Events",
+						"GEN: Documentation Request",
+						"GEN: General Feedback",
+						"GEN: Call Transfer Request",
+						"GEN: Call Escalation Request",
+						"GEN: Looking for Someone",
+						"GEN: Looking for Department",
+						"GEN: Internal Contact Info",
+						"GEN: Test Call / Email",
+						"GEN: Leasing Options",
+						"GEN: Volume Discount",
+						"GEN: Financing Options",
+						"GEN: Sponsorship Inquiry",
+						"GEN: Environmental Ratings",
+						"GEN: Others (specify)",
+					  ]),
+					  "Language Support": sortOptions([
+						"LANG: Malay/Bahasa",
+						"LANG: Chinese/Mandarin",
+						"LANG: Others (specify)",
+					  ]),
+					  "Line Issue": sortOptions([
+						"LINE: Distorted Line",
+						"LINE: Line Disconnected",
+						"LINE: Ghost Call",
+						"LINE: Drop Call",
+					  ]),
+					  Sales: sortOptions([
+						"WTB: Units",
+						"WTB: Consumables",
+						"WTB: Accessories",
+						"WTB: Parts",
+						"WTB: Bulk Purchase",
+						"WTB: Warranty Extension",
+						"WTB: Demo Units",
+						"PRI: Units",
+						"PRI: Consumables",
+						"PRI: Accessories",
+						"PRI: Parts",
+						"SPEC: Units",
+						"SPEC: Consumables",
+						"SPEC: Accessories",
+						"SPEC: Parts",
+						"SPEC: Product Overview",
+						"SPEC: Compatibility",
+						"SPEC: Ink Authenticity",
+						"SPEC: Warranty Terms",
+						"SPEC: Dimensions & Weight",
+						"QTN: Request",
+						"QTN: Follow-up",
+						"QTN: Revision",
+						"QTN: Validity",
+						"QTN: Bulk Order Quote",
+						"DLS: Application",
+						"DLS: Requirements",
+						"DLS: Status Update",
+						"PROMO: Trade-in Offers",
+						"PROMO: Redemption",
+						"PROMO: Seasonal Discounts",
+						"PROMO: Bundle Deals",
+						"SLS: Others (specify)",
+					  ]),
+					  Service: sortOptions([
+						"REP: DOA Related",
+						"REP: Diagnostic",
+						"REP: Ink/Mbox Delivery",
+						"REP: Firmware Update",
+						"REP: PMS Calling",
+						"REP: Meter Reading",
+						"REP: Repair Follow-up",
+						"QTN: Quote Request",
+						"QTN: Quote Follow-up",
+						"QTN: Quote Revision",
+						"ASP: Application",
+						"ASP: Requirements",
+						"ASP: Status Update",
+						"ASP: Finding Service Center",
+						"REP: Others (specify)",
+					  ]),
+					  Technical: sortOptions([
+						"PRT: Garbage Print",
+						"PRT: Streaks",
+						"PRT: Smudging",
+						"PRT: Banding / Missing Lines",
+						"PRT: Missing Color",
+						"PRT: Blank Print",
+						"PRT: Faded Print",
+						"PRT: Blurry Output",
+						"PRT: Alignment Issues",
+						"PRT: Pixelation",
+						"PRT: Inkpad EOL",
+						"PRT: Maintenance Box EOL",
+						"PRT: Maintenance Box Not Recognized",
+						"PRT: Paper Curling",
+						"PRT: Print Head Issue",
+						"PRT: Ink Not Recognized",
+						"PRT: Ink Smearing",
+						"PRT: Incorrect Margins",
+						"PPR: ADF Issue",
+						"PPR: Paper Jam",
+						"PPR: Skewed Feed",
+						"PPR: Multi-Sheet Feed",
+						"PPR: No Paper Feed",
+						"PPR: Wrong Size Detection",
+						"PPR: Paper Not Ejected",
+						"PPR: Duplex Error",
+						"PPR: Tray Empty Error",
+						"PPR: Broken Part(s)",
+						"PPR: Paper Size Mismatch",
+						"PPR: Unsupported Paper Type",
+						"PNL: Unresponsive Panel",
+						"PNL: Frozen Display",
+						"PNL: Error Code",
+						"PNL: Wrong Language",
+						"PNL: Touchscreen Not Working",
+						"PNL: Flickering Panel",
+						"PNL: Buttons Not Responding",
+						"PNL: Backlight Dim",
+						"PNL: Panel Calibration Issue",
+						"PNL: Block Dot",
+						"PNL: Blinking Error Light",
+						"PNL: All lights Blinking",
+						"PWR: No Power",
+						"PWR: Sudden Power Off",
+						"PWR: Power Button Issue",
+						"PWR: Power Supply Noise",
+						"PWR: Loose/Damaged Cord",
+						"PWR: Fatal Error",
+						"PWR: Overheating Power Supply",
+						"PWR: Auto Restart Loop",
+						"SCN: Blurry Scan",
+						"SCN: Blank Scan",
+						"SCN: Low Resolution",
+						"SCN: Color Distortion",
+						"SCN: Lines/Artifacts",
+						"SCN: File Not Saved",
+						"SCN: Scan Cropping Issue",
+						"SCN: Scan Orientation Wrong",
+						"SCN: Scanner not Working",
+						"SCN: Scan to Email Issue",
+						"SCN: Scan to Cloud Issue",
+						"CPY: Faded Copy",
+						"CPY: Dark Copy",
+						"CPY: Skewed Copy",
+						"CPY: Lines on Copy",
+						"CPY: Blank Copy",
+						"CPY: Misaligned Copy",
+						"CPY: Size Mismatch",
+						"CPY: Copy Cropping Issue",
+						"CPY: Copy Orientation Wrong",
+						"WF: Wi-Fi Setup",
+						"WF: Wi-Fi Not Detected",
+						"WF: Wi-Fi Drops/Intermittent",
+						"WF: Wrong Wi-Fi Password",
+						"WF: Weak Wi-Fi Signal",
+						"WF: Wi-Fi LED Off",
+						"WF: Wi-Fi Out of Order",
+						"WF: Wi-Fi Authentication Error",
+						"WFD: Wi-Fi Direct Setup",
+						"WFD: Wi-Fi Direct Not Detected",
+						"WFD: Wi-Fi Direct Drops/Intermittent",
+						"WFD: Wrong Wi-Fi Direct Password",
+						"WFD: Weak Wi-Fi Direct Signal",
+						"WFD: Wi-Fi Direct LED Off",
+						"WFD: Wi-Fi Direct Out of Order",
+						"WFD: Wi-Fi Direct Authentication Error",
+						"USB: USB Not Recognized",
+						"USB: USB Drops/Intermittent",
+						"USB: USB Port Damaged",
+						"USB: Driver Missing",
+						"USB: Slow Data Transfer",
+						"ETH: LAN No Connection",
+						"ETH: IP Conflict",
+						"ETH: Cable Not Detected",
+						"ETH: Slow Network",
+						"ETH: Config Error",
+						"ETH: DHCP Failure",
+						"MBL: Smart Panel Issue",
+						"MBL: iPrint Issue",
+						"MBL: iProjection Issue",
+						"MBL: Air Print Issue",
+						"PROJ: No Display",
+						"PROJ: Blurry Projection",
+						"PROJ: Color Distortion",
+						"PROJ: Flickering Image",
+						"PROJ: Keystone Error",
+						"PROJ: Projector Not Detected",
+						"PROJ: Overheating",
+						"PROJ: Lamp Warning/Error",
+						"PROJ: No Audio Output",
+						"PROJ: HDMI Port Not Detected",
+						"PROJ: Lens Focus Issue",
+						"TECH: Firmware Update Failed",
+						"TECH: Driver Installation Error",
+						"TECH: App Connectivity Issue",
+						"TECH: Others (specify)",
+					  ]),
+					  Warranty: sortOptions([
+						"WRTY: Warranty Claim",
+						"WRTY: Validation Request",
+						"WRTY: Period Inquiry",
+						"WRTY: Terms Clarification",
+						"WRTY: Extended Warranty Purchase",
+						"WRTY: Extended Warranty Options",
+						"WRTY: Proof of Purchase Submission",
+						"WRTY: Registration Assistance",
+						"WRTY: Transfer Request",
+						"WRTY: MYEpson Portal Assistance",
+						"WRTY: Others (specify)",
+					  ]),
+					};
 
-					if (!surveyEmailField) return;
+				const selectedMainReason = this.value;
+				if (subReasonMap[selectedMainReason]) {
+				  setOptions(contactReasonSub, subReasonMap[selectedMainReason], "Select Sub Contact Reason");
+				} else {
+				  resetSelect(contactReasonSub, "Select Main Reason first");
+				}
 
-					const shouldShow = surveyValue === "Yes via Email" || surveyValue === "Yes via Email and SMS";
-					surveyEmailField.classList.toggle("hidden-field", !shouldShow);
+				// Re-evaluate closing disposition whenever main changes
+				updateClosingDispo({ closingDispo, directionSelect, contactDirectionSelect, contactReasonMain });
+			  });
+
+			  // Closing Disposition triggers
+			  contactDirectionSelect.addEventListener("change", () =>
+				updateClosingDispo({ closingDispo, directionSelect, contactDirectionSelect, contactReasonMain })
+			  );
+			  directionSelect.addEventListener("change", () =>
+				updateClosingDispo({ closingDispo, directionSelect, contactDirectionSelect, contactReasonMain })
+			  );
+
+			  // 9) Product category → subcategory → customer type mapping
+			  const productSubcategories = {
+				Printers: ["BIJ/CIJ", "CISS/MONO", "Labelworks", "POS", "SIDM", "Minilab", "Laser"],
+				"Printing Solutions": ["BIJ/CIJ Pro", "RIPS/LIJ", "Colour Label", "Label Press", "LFP", "Photo/Proof"],
+				"Visual Products": ["Business Projector", "Home Projector", "High Brightness"],
+				Scanners: ["Document", "Photo"],
+				Others: ["Others"],
+				"Unable to get the model": ["Unable to get the model"],
+			  };
+			  const subcategoryToCustomerType = {
+				// MERI-B2C
+				"Business Projector": "MERI-B2C",
+				"CISS/MONO": "MERI-B2C",
+				"BIJ/CIJ": "MERI-B2C",
+				Labelworks: "MERI-B2C",
+				SIDM: "MERI-B2C",
+				// MERI-B2B
+				Laser: "MERI-B2B",
+				Minilab: "MERI-B2B",
+				"Photo/Proof": "MERI-B2B",
+				Document: "MERI-B2B",
+				Photo: "MERI-B2B",
+				POS: "MERI-B2B",
+				// HARI-B2C
+				"Home Projector": "HARI-B2C",
+				// HARI-B2B
+				"BIJ/CIJ Pro": "HARI-B2B",
+				"RIPS/LIJ": "HARI-B2B",
+				"Colour Label": "HARI-B2B",
+				"Label Press": "HARI-B2B",
+				LFP: "HARI-B2B",
+				"High Brightness": "HARI-B2B",
+				// OTHERS/UNABLE
+				Others: "N/A",
+				"Unable to get the model": "N/A",
+			  };
+
+			  productCategorySelect.addEventListener("change", (event) => {
+				const category = event.target.value;
+				resetSelect(productSubcategorySelect, "Select a category first");
+				resetSelect(customerType, "Select a sub-category first");
+				const subs = productSubcategories[category];
+				if (category && subs) {
+				  setOptions(productSubcategorySelect, subs, "Select Sub-category");
+				}
+			  });
+
+			  productSubcategorySelect.addEventListener("change", (event) => {
+				const subcategory = event.target.value;
+				const mappedType = subcategoryToCustomerType[subcategory];
+				if (mappedType) {
+				  customerType.innerHTML = `<option value="">Select a sub-category first</option><option value="${mappedType}">${mappedType}</option>`;
+				  customerType.value = mappedType;
+				} else {
+				  resetSelect(customerType, "Select a sub-category first");
+				}
+			  });
+
+			  // 10) Survey email visibility
+			  isSurveySent.addEventListener("change", (event) => {
+				const surveyValue = event.target.value;
+				const surveyEmailField = document.getElementById("survey-email-field");
+				if (!surveyEmailField) return;
+				const shouldShow =
+				  surveyValue === "Yes via Email" || surveyValue === "Yes via Email and SMS";
+				surveyEmailField.classList.toggle("hidden-field", !shouldShow);
+			  });
+
+			  // 11) Date default (once)
+			  (function initDefaultDate() {
+				const dateInput = document.getElementById("fldDate");
+				if (dateInput && !dateInput.value) {
+				  const today = new Date();
+				  const yyyy = today.getFullYear();
+				  const mm = String(today.getMonth() + 1).padStart(2, "0");
+				  const dd = String(today.getDate()).padStart(2, "0");
+				  dateInput.value = `${yyyy}-${mm}-${dd}`;
+				}
+			  })();
+
+			  // 12) Prune selects to default (once on load)
+			  (function pruneSelectsToDefault() {
+				const selectFieldsToPrune = [
+				  "agentName",
+				  "contactDirection",
+				  "channel",
+				  "contactReasonMain",
+				  "contactReasonSub",
+				  "productCategory",
+				  "productSubcategory",
+				  "captureSource",
+				  "closingDisposition",
+				  "isVRAUtilized",
+				  "isSurveySent",
+				  "customerType",
+				];
+				selectFieldsToPrune.forEach((name) => {
+				  const selectEl = document.getElementById(`fld${name.charAt(0).toUpperCase() + name.slice(1)}`);
+				  if (!selectEl) return;
+				  const defaultOption = selectEl.querySelector('option[value=""]');
+				  if (defaultOption) {
+					selectEl.innerHTML = "";
+					selectEl.appendChild(defaultOption.cloneNode(true));
+					selectEl.value = "";
+					selectEl.dispatchEvent(new Event("change"));
+				  }
 				});
-
-                document.addEventListener("DOMContentLoaded", function () {
-                    // --- Date-only field ---
-                    const dateInput = document.getElementById("fldDate");
-                    if (dateInput) {
-                        const today = new Date();
-                        const yyyy = today.getFullYear();
-                        const mm = String(today.getMonth() + 1).padStart(2, "0");
-                        const dd = String(today.getDate()).padStart(2, "0");
-                        if (!dateInput.value) {
-                            dateInput.value = `${yyyy}-${mm}-${dd}`;
-                        }
-                    }
-                });
-				
-				document.addEventListener("DOMContentLoaded", () => {
-					const selectFieldsToPrune = [
-						"agentName",
-						"contactDirection",
-						"channel",
-						"contactReasonMain",
-						"contactReasonSub",
-						"productCategory",
-						"productSubcategory",
-						"captureSource",
-						"closingDisposition",
-						"isVRAUtilized",
-						"isSurveySent",
-						"customerType"
-					];
-
-					selectFieldsToPrune.forEach((name) => {
-						const selectEl = document.getElementById(`fld${name.charAt(0).toUpperCase() + name.slice(1)}`);
-						if (selectEl) {
-							const defaultOption = selectEl.querySelector('option[value=""]');
-							if (defaultOption) {
-								selectEl.innerHTML = "";
-								selectEl.appendChild(defaultOption.cloneNode(true));
-								selectEl.value = "";
-								selectEl.dispatchEvent(new Event("change"));
-							}
-						}
-					});
-				});
-
-            })();
-			
+			  })();
+			})();
 
             document.addEventListener("DOMContentLoaded", () => {
                 const allRecords = Storage.getAll(); // Assuming Storage.getAll() returns your stored array
